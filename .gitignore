@@ -1,0 +1,36 @@
+# Environment Variables
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Backend (Python)
+backend/venv/
+backend/env/
+backend/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Frontend (Node.js/Next.js)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+
+# IDEs and OS Files
+.vscode/
+.idea/
+.DS_Store
+*.swp
+Thumbs.db
