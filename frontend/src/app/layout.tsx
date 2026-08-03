@@ -1,11 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "FinSphere AI",
@@ -15,6 +9,7 @@ export const metadata: Metadata = {
 import Sidebar from "@/components/layout/Sidebar";
 import TopBar from "@/components/layout/TopBar";
 import AICopilot from "@/components/AICopilot";
+import { BusinessModeProvider } from "@/context/BusinessModeContext";
 
 export default function RootLayout({
   children,
@@ -24,17 +19,19 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} h-full antialiased`}
+      className="h-full antialiased"
     >
       <body className="min-h-full flex bg-slate-50 text-slate-800 font-sans">
-        <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <TopBar />
-          <main className="flex-1 p-8 overflow-y-auto">
-            {children}
-          </main>
-        </div>
-        <AICopilot />
+        <BusinessModeProvider>
+          <Sidebar />
+          <div className="flex-1 flex flex-col min-w-0">
+            <TopBar />
+            <main className="flex-1 p-8 overflow-y-auto">
+              {children}
+            </main>
+          </div>
+          <AICopilot />
+        </BusinessModeProvider>
       </body>
     </html>
   );

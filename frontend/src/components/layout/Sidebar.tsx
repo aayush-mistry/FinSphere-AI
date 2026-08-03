@@ -9,9 +9,12 @@ import {
   Briefcase, 
   Settings
 } from "lucide-react";
+import { useBusinessMode } from "@/context/BusinessModeContext";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { isBusinessMode, setIsBusinessMode } = useBusinessMode();
+
 
   const navItems = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -49,7 +52,25 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="p-4 border-t border-slate-100">
+      <div className="p-4 border-t border-slate-100 flex flex-col gap-2">
+        <div className="flex items-center justify-between p-2 bg-slate-50 rounded-xl border border-slate-100">
+          <span className="text-xs font-semibold text-slate-500">Mode</span>
+          <div className="flex bg-slate-200 p-1 rounded-lg">
+            <button 
+              onClick={() => setIsBusinessMode(false)}
+              className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${!isBusinessMode ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}
+            >
+              Personal
+            </button>
+            <button 
+              onClick={() => setIsBusinessMode(true)}
+              className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${isBusinessMode ? 'bg-indigo-600 shadow-sm text-white' : 'text-slate-500'}`}
+            >
+              Business
+            </button>
+          </div>
+        </div>
+
         <Link 
           href="/settings" 
           className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${

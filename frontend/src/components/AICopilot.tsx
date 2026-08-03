@@ -1,13 +1,52 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, User, Bot, X, MessageSquare, Activity } from 'lucide-react';
+import { Send, User, Bot, X, MessageSquare, Activity, Mic } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { api } from "@/lib/api";
 
 type Message = {
   id: string;
   role: 'user' | 'ai';
   content: string;
+};
+
+type SpeechRecognitionResultEvent = Event & {
+  results: {
+    [index: number]: {
+      [index: number]: {
+        transcript: string;
+      };
+    };
+  };
+};
+
+type SpeechRecognitionErrorEvent = Event & {
+  error: string;
+};
+
+type SpeechRecognitionInstance = {
+  continuous: boolean;
+  interimResults: boolean;
+  onstart: (() => void) | null;
+  onresult: ((event: SpeechRecognitionResultEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+};
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
+
+type WindowWithSpeechRecognition = Window & {
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
+};
+
+type ChatStreamEvent = {
+  conversation_id?: number;
+  active_agent?: string;
+  content?: string;
+  error?: string;
 };
 
 export default function AICopilot() {
@@ -19,6 +58,7 @@ export default function AICopilot() {
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [activeAgent, setActiveAgent] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -29,11 +69,46 @@ export default function AICopilot() {
     scrollToBottom();
   }, [messages, isOpen]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  const startRecording = () => {
+    const browserWindow = window as WindowWithSpeechRecognition;
+    const SpeechRecognition = browserWindow.SpeechRecognition ?? browserWindow.webkitSpeechRecognition;
 
-    const userMessage: Message = { id: Date.now().toString(), role: 'user', content: input };
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser.");
+      return;
+    }
+    
+    const recognition = new SpeechRecognition();
+    
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    
+    recognition.onstart = () => setIsRecording(true);
+    
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
+      // Auto-submit after transcription
+      void sendMessage(transcript);
+    };
+    
+    recognition.onerror = (event) => {
+      console.error(event.error);
+      setIsRecording(false);
+    };
+    
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+    
+    recognition.start();
+  };
+
+  const sendMessage = async (overrideInput?: string) => {
+    const finalInput = overrideInput || input;
+    if (!finalInput.trim() || isLoading) return;
+
+    const userMessage: Message = { id: Date.now().toString(), role: 'user', content: finalInput };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
@@ -43,7 +118,7 @@ export default function AICopilot() {
     setMessages(prev => [...prev, { id: aiMessageId, role: 'ai', content: '' }]);
 
     try {
-      const response = await fetch('http://localhost:8000/api/chat', {
+      const response = await fetch(api.chatUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -75,7 +150,7 @@ export default function AICopilot() {
                 break;
               }
               try {
-                const data = JSON.parse(dataStr);
+                const data = JSON.parse(dataStr) as ChatStreamEvent;
                 
                 // Handle Metadata Events
                 if (data.conversation_id) {
@@ -97,7 +172,7 @@ export default function AICopilot() {
                 } else if (data.error) {
                   console.error('AI Error:', data.error);
                 }
-              } catch (e) {
+              } catch {
                 // Ignore incomplete JSON chunks safely
               }
             }
@@ -118,6 +193,11 @@ export default function AICopilot() {
       // We can choose to clear the active agent or leave it to show who answered last
       // Let's leave it visible so the user knows which agent helped them
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await sendMessage();
   };
 
   const formatAgentName = (agent: string) => {
@@ -202,6 +282,14 @@ export default function AICopilot() {
               className="flex-1 px-4 py-2 bg-gray-100 border-transparent focus:bg-white border focus:border-blue-500 rounded-full outline-none transition-colors"
               disabled={isLoading}
             />
+            <button
+              type="button"
+              onMouseDown={startRecording}
+              className={`p-2 rounded-full transition-colors ${isRecording ? 'bg-red-500 animate-pulse text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'}`}
+              title="Click to speak"
+            >
+              <Mic size={20} />
+            </button>
             <button
               type="submit"
               disabled={!input.trim() || isLoading}

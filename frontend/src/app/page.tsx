@@ -1,45 +1,58 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { 
   Card, CardContent, CardDescription, CardHeader, CardTitle 
 } from "@/components/ui/card";
 import { 
-  PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend
+  PieChart, Pie, Cell, ResponsiveContainer, Legend
 } from "recharts";
 import { 
-  ArrowDownIcon, ArrowUpIcon, Activity, Wallet, PieChart as PieChartIcon, 
-  ShoppingCart, Coffee, Film, Car, Zap, Package, DollarSign, Home, CheckCircle2, ShieldAlert
+  ArrowUpIcon, Activity, Wallet, PieChart as PieChartIcon, 
+  ShoppingCart, Coffee, Film, Car, Zap, Package, DollarSign, Home, CheckCircle2, ShieldAlert,
+  FileText, Users, Banknote
 } from "lucide-react";
 import FraudIntelligenceCenter from "@/components/FraudIntelligenceCenter";
+import { useBusinessMode } from "@/context/BusinessModeContext";
+import { useAsyncData } from "@/hooks/useAsyncData";
+import { api } from "@/lib/api";
+import { formatCurrency } from "@/lib/format";
+import type { PortfolioAllocation, Transaction } from "@/lib/types";
+
+type PieLabelProps = {
+  cx?: number;
+  cy?: number;
+  midAngle?: number;
+  innerRadius?: number;
+  outerRadius?: number;
+  percent?: number;
+  index?: number;
+  name?: string;
+};
 
 export default function Dashboard() {
-  const [summary, setSummary] = useState({ totalNetWorth: 0, monthlyCashFlow: 0, financialHealthScore: 0 });
-  const [transactions, setTransactions] = useState([]);
-  const [allocation, setAllocation] = useState([]);
+  const { isBusinessMode } = useBusinessMode();
+  const loadDashboardData = useCallback(
+    () =>
+      Promise.all([
+        api.getDashboardSummary(),
+        api.getTransactions(6),
+        api.getPortfolioAllocation(),
+      ]).then(([summary, transactions, allocation]) => ({ summary, transactions, allocation })),
+    []
+  );
+  const dashboardData = useAsyncData(loadDashboardData);
   
   // Color palette for the charts (emerald / navy aesthetic)
-  const COLORS = ['#059669', '#1e3a8a', '#10b981', '#3b82f6'];
+  const COLORS = useMemo(() => ["#059669", "#1e3a8a", "#10b981", "#3b82f6"], []);
 
-  useEffect(() => {
-    // Fetch Summary
-    fetch('http://127.0.0.1:8000/api/dashboard/summary')
-      .then(res => res.json())
-      .then(data => setSummary(data))
-      .catch(err => console.error(err));
-
-    // Fetch Transactions
-    fetch('http://127.0.0.1:8000/api/transactions?limit=6')
-      .then(res => res.json())
-      .then(data => setTransactions(data))
-      .catch(err => console.error(err));
-
-    // Fetch Allocation
-    fetch('http://127.0.0.1:8000/api/portfolio/allocation')
-      .then(res => res.json())
-      .then(data => setAllocation(data))
-      .catch(err => console.error(err));
-  }, []);
+  const summary = dashboardData.data?.summary ?? {
+    totalNetWorth: 0,
+    monthlyCashFlow: 0,
+    financialHealthScore: 0,
+  };
+  const transactions = dashboardData.data?.transactions ?? [];
+  const allocation = dashboardData.data?.allocation ?? [];
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -61,15 +74,26 @@ export default function Dashboard() {
     { name: "Fraud Investigator", status: "Standby", active: false }
   ];
 
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: PieLabelProps) => {
+    if (
+      cx === undefined ||
+      cy === undefined ||
+      midAngle === undefined ||
+      innerRadius === undefined ||
+      outerRadius === undefined
+    ) {
+      return null;
+    }
+
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 1.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    const color = COLORS[(index ?? 0) % COLORS.length];
 
     return (
-      <text x={x} y={y} fill={COLORS[index % COLORS.length]} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-xs font-semibold">
-        {`${name} ${((percent || 0) * 100).toFixed(0)}%`}
+      <text x={x} y={y} fill={color} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-xs font-semibold">
+        {`${name ?? "Item"} ${((percent || 0) * 100).toFixed(0)}%`}
       </text>
     );
   };
@@ -77,50 +101,93 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold tracking-tight text-slate-900">Dashboard</h2>
+      {dashboardData.error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          Unable to refresh dashboard data. {dashboardData.error}
+        </div>
+      )}
       
-      {/* 1. Top KPI Row */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-slate-100 shadow-sm bg-white">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">Total Net Worth</CardTitle>
-            <Wallet className="h-4 w-4 text-slate-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-slate-900">
-              ${summary.totalNetWorth.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-            </div>
-            <p className="text-xs text-emerald-600 flex items-center mt-1">
-              <ArrowUpIcon className="mr-1 h-3 w-3" /> +2.5% from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="border-slate-100 shadow-sm bg-white">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">Monthly Cash Flow</CardTitle>
-            <Activity className="h-4 w-4 text-slate-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-slate-900">
-              ${summary.monthlyCashFlow.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-            </div>
-            <p className="text-xs text-emerald-600 flex items-center mt-1">
-              <ArrowUpIcon className="mr-1 h-3 w-3" /> Healthy positive flow
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="border-slate-100 shadow-sm bg-white">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">Financial Health Score</CardTitle>
-            <PieChartIcon className="h-4 w-4 text-slate-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-600">
-              {summary.financialHealthScore} <span className="text-sm text-slate-400 font-normal">/ 100</span>
-            </div>
-            <p className="text-xs text-slate-500 mt-1">Excellent standing</p>
-          </CardContent>
-        </Card>
-      </div>
+      {isBusinessMode ? (
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="border-slate-100 shadow-sm bg-white border-indigo-200">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-slate-500">Pending Invoices</CardTitle>
+              <FileText className="h-4 w-4 text-indigo-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-slate-900">$45,200.00</div>
+              <p className="text-xs text-amber-600 flex items-center mt-1">
+                3 invoices overdue
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-100 shadow-sm bg-white border-indigo-200">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-slate-500">Payroll Summary (Month)</CardTitle>
+              <Users className="h-4 w-4 text-indigo-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-slate-900">$112,450.00</div>
+              <p className="text-xs text-slate-500 flex items-center mt-1">
+                Due in 5 days
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-100 shadow-sm bg-white border-indigo-200">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-slate-500">Cash Flow Runway</CardTitle>
+              <Banknote className="h-4 w-4 text-indigo-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-600">8.5 <span className="text-sm text-slate-400 font-normal">Months</span></div>
+              <p className="text-xs text-slate-500 mt-1">Based on avg burn rate of $42k/mo</p>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="border-slate-100 shadow-sm bg-white">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-slate-500">Total Net Worth</CardTitle>
+              <Wallet className="h-4 w-4 text-slate-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-slate-900">
+                {formatCurrency(summary.totalNetWorth)}
+              </div>
+              <p className="text-xs text-emerald-600 flex items-center mt-1">
+                <ArrowUpIcon className="mr-1 h-3 w-3" /> +2.5% from last month
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-100 shadow-sm bg-white">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-slate-500">Monthly Cash Flow</CardTitle>
+              <Activity className="h-4 w-4 text-slate-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-slate-900">
+                {formatCurrency(summary.monthlyCashFlow)}
+              </div>
+              <p className="text-xs text-emerald-600 flex items-center mt-1">
+                <ArrowUpIcon className="mr-1 h-3 w-3" /> Healthy positive flow
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-100 shadow-sm bg-white">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-slate-500">Financial Health Score</CardTitle>
+              <PieChartIcon className="h-4 w-4 text-slate-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-600">
+                {summary.financialHealthScore} <span className="text-sm text-slate-400 font-normal">/ 100</span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">Excellent standing</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         
@@ -131,9 +198,11 @@ export default function Dashboard() {
             <CardDescription>Your current investment distribution</CardDescription>
           </CardHeader>
           <CardContent className="h-[300px] flex items-center justify-center">
-            {allocation.length > 0 ? (
+            {dashboardData.isLoading ? (
+              <div className="h-full w-full animate-pulse rounded-lg bg-slate-100" />
+            ) : allocation.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
+                <PieChart data={allocation}>
                   <Pie
                     data={allocation}
                     cx="50%"
@@ -145,7 +214,7 @@ export default function Dashboard() {
                     label={renderCustomizedLabel}
                     labelLine={false}
                   >
-                    {allocation.map((entry, index) => (
+                    {allocation.map((entry: PortfolioAllocation, index: number) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -153,7 +222,7 @@ export default function Dashboard() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="text-slate-400 flex items-center justify-center h-full">Loading chart data...</div>
+              <div className="text-slate-400 flex items-center justify-center h-full">No allocation data available.</div>
             )}
           </CardContent>
         </Card>
@@ -194,8 +263,12 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {transactions.length > 0 ? transactions.map((t: any, i) => (
-                  <div key={i} className="flex items-center justify-between border-b border-slate-50 pb-2 last:border-0 last:pb-0">
+                {dashboardData.isLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="h-12 animate-pulse rounded-lg bg-slate-100" />
+                  ))
+                ) : transactions.length > 0 ? transactions.map((t: Transaction) => (
+                  <div key={t.id} className="flex items-center justify-between border-b border-slate-50 pb-2 last:border-0 last:pb-0">
                     <div className="flex items-center space-x-3">
                       <div className="p-2 bg-slate-50 rounded-full">
                         {getCategoryIcon(t.category)}
@@ -206,11 +279,11 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <div className={`text-sm font-semibold ${t.amount > 0 ? 'text-emerald-600' : 'text-slate-900'}`}>
-                      {t.amount > 0 ? '+' : ''}{t.amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                      {t.amount > 0 ? '+' : ''}{formatCurrency(t.amount)}
                     </div>
                   </div>
                 )) : (
-                  <div className="text-sm text-slate-400 text-center py-4">Loading transactions...</div>
+                  <div className="text-sm text-slate-400 text-center py-4">No recent transactions yet.</div>
                 )}
               </div>
             </CardContent>

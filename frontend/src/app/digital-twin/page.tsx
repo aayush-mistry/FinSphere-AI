@@ -3,12 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Home, Briefcase, TrendingUp } from 'lucide-react';
+import { api } from "@/lib/api";
+import { formatCompactCurrency, formatCurrency } from "@/lib/format";
+import type { SimulationPoint } from "@/lib/types";
 
-type SimulationData = {
-  month: number;
-  baseline: number;
-  simulated: number;
-};
+type TooltipValue = number | string | readonly (number | string)[] | undefined;
 
 export default function DigitalTwinPage() {
   const [netWorth, setNetWorth] = useState(100000);
@@ -17,28 +16,25 @@ export default function DigitalTwinPage() {
   const [loanRate, setLoanRate] = useState(6.5);
   const [jobLossMonths, setJobLossMonths] = useState(0);
   
-  const [data, setData] = useState<SimulationData[]>([]);
+  const [data, setData] = useState<SimulationPoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSimulation = async () => {
       setLoading(true);
+      setError(null);
       try {
-        const res = await fetch('http://localhost:8000/api/simulate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            net_worth: netWorth,
-            house_cost: houseCost,
-            downpayment: downpayment,
-            loan_rate: loanRate,
-            job_loss_months: jobLossMonths
-          })
+        const result = await api.runSimulation({
+          net_worth: netWorth,
+          house_cost: houseCost,
+          downpayment,
+          loan_rate: loanRate,
+          job_loss_months: jobLossMonths,
         });
-        const result = await res.json();
         setData(result);
-      } catch (err) {
-        console.error(err);
+      } catch (simulationError: unknown) {
+        setError(simulationError instanceof Error ? simulationError.message : "Unable to run simulation.");
       } finally {
         setLoading(false);
       }
@@ -61,6 +57,12 @@ export default function DigitalTwinPage() {
         </div>
       </div>
 
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          {error}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Controls */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6 h-fit">
@@ -72,7 +74,7 @@ export default function DigitalTwinPage() {
             <div>
               <label className="flex justify-between text-sm font-medium text-slate-600 mb-1">
                 <span>Current Net Worth</span>
-                <span className="text-blue-600">${netWorth.toLocaleString()}</span>
+                <span className="text-blue-600">{formatCurrency(netWorth)}</span>
               </label>
               <input type="range" min="10000" max="500000" step="5000" value={netWorth} onChange={(e) => setNetWorth(Number(e.target.value))} className="w-full accent-blue-600" />
             </div>
@@ -80,7 +82,7 @@ export default function DigitalTwinPage() {
             <div className="pt-4 border-t border-slate-100">
               <label className="flex justify-between text-sm font-medium text-slate-600 mb-1">
                 <span>Buy a House (Cost)</span>
-                <span className="text-blue-600">${houseCost.toLocaleString()}</span>
+                <span className="text-blue-600">{formatCurrency(houseCost)}</span>
               </label>
               <input type="range" min="100000" max="2000000" step="25000" value={houseCost} onChange={(e) => setHouseCost(Number(e.target.value))} className="w-full accent-blue-600" />
             </div>
@@ -88,7 +90,7 @@ export default function DigitalTwinPage() {
             <div>
               <label className="flex justify-between text-sm font-medium text-slate-600 mb-1">
                 <span>Downpayment</span>
-                <span className="text-blue-600">${downpayment.toLocaleString()}</span>
+                <span className="text-blue-600">{formatCurrency(downpayment)}</span>
               </label>
               <input type="range" min="0" max={houseCost} step="5000" value={downpayment} onChange={(e) => setDownpayment(Number(e.target.value))} className="w-full accent-blue-600" />
             </div>
@@ -128,14 +130,14 @@ export default function DigitalTwinPage() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                   <XAxis dataKey="month" tick={{ fill: '#64748b' }} tickLine={false} axisLine={false} />
                   <YAxis 
-                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                    tickFormatter={(value) => formatCompactCurrency(Number(value))}
                     tick={{ fill: '#64748b' }}
                     tickLine={false}
                     axisLine={false}
                     width={80}
                   />
                   <Tooltip 
-                    formatter={(value: any) => [value != null ? `$${Number(value).toLocaleString()}` : '', '']}
+                    formatter={(value: TooltipValue) => [typeof value === "number" ? formatCurrency(value) : "", ""]}
                     labelFormatter={(label) => `Month ${label}`}
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                   />

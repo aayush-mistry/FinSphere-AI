@@ -23,7 +23,7 @@ class Route(BaseModel):
     next_node: Literal[
         "financial_advisor", "loan_intelligence", "tax_optimizer", "insurance_ai", 
         "investment_analyst", "retirement_planner", "budget_tracker", "crypto_expert", 
-        "real_estate_advisor", "estate_planner", "debt_manager", "FINISH"
+        "real_estate_advisor", "estate_planner", "debt_manager", "business_cfo", "FINISH"
     ] = Field(
         description="The agent to route to based on the user's request."
     )
@@ -66,6 +66,7 @@ Analyze the user's latest request and route it to one of the 11 specialized agen
 - 'real_estate_advisor': mortgages, property values.
 - 'estate_planner': wills, trusts, inheritance.
 - 'debt_manager': debt consolidation, bankruptcy.
+- 'business_cfo': SME-focused advice, tax write-offs, operational costs, B2B cash flow.
 
 If the user's query doesn't fit these, choose 'FINISH'.
 """
@@ -106,6 +107,13 @@ USER DATA:
 {user_data}
 """
 
+BUSINESS_CFO_PROMPT = """You are the Business CFO Node for FinSphere AI.
+Provide SME-focused advice on tax write-offs, operational costs, and business strategy.
+Format output using markdown.
+USER DATA:
+{user_data}
+"""
+
 # Dummy prompts for the rest of the 11 personas
 STUB_PROMPT = "You are the {role} for FinSphere AI. Provide a brief answer related to {role}. USER DATA: {user_data}"
 
@@ -141,6 +149,7 @@ crypto_expert_node = agent_node_factory(STUB_PROMPT, "Crypto Expert")
 real_estate_advisor_node = agent_node_factory(STUB_PROMPT, "Real Estate Advisor")
 estate_planner_node = agent_node_factory(STUB_PROMPT, "Estate Planner")
 debt_manager_node = agent_node_factory(STUB_PROMPT, "Debt Manager")
+business_cfo_node = agent_node_factory(BUSINESS_CFO_PROMPT, "Business CFO")
 
 def fallback_node(state: AgentState):
     response = llm.invoke([SystemMessage(content="You are a helpful AI assistant. Please provide a general response.")] + list(state["messages"]))
@@ -162,6 +171,7 @@ workflow.add_node("crypto_expert", crypto_expert_node)
 workflow.add_node("real_estate_advisor", real_estate_advisor_node)
 workflow.add_node("estate_planner", estate_planner_node)
 workflow.add_node("debt_manager", debt_manager_node)
+workflow.add_node("business_cfo", business_cfo_node)
 workflow.add_node("fallback", fallback_node)
 
 workflow.add_edge(START, "supervisor")
@@ -187,13 +197,14 @@ workflow.add_conditional_edges(
         "real_estate_advisor": "real_estate_advisor",
         "estate_planner": "estate_planner",
         "debt_manager": "debt_manager",
+        "business_cfo": "business_cfo",
         "fallback": "fallback"
     }
 )
 
 nodes = ["financial_advisor", "loan_intelligence", "tax_optimizer", "insurance_ai", 
          "investment_analyst", "retirement_planner", "budget_tracker", "crypto_expert", 
-         "real_estate_advisor", "estate_planner", "debt_manager", "fallback"]
+         "real_estate_advisor", "estate_planner", "debt_manager", "business_cfo", "fallback"]
 
 for n in nodes:
     workflow.add_edge(n, END)
