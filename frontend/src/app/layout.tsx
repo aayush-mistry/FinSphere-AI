@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 
 import Sidebar from "@/components/layout/Sidebar";
 import TopBar from "@/components/layout/TopBar";
+import AICopilot from "@/components/AICopilot";
 
 export default function RootLayout({
   children,
@@ -33,6 +34,7 @@ export default function RootLayout({
             {children}
           </main>
         </div>
+        <AICopilot />
       </body>
     </html>
   );

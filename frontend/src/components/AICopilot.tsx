@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, User, Bot, X, MessageSquare } from 'lucide-react';
+import { Send, User, Bot, X, MessageSquare, Activity } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 type Message = {
@@ -17,6 +17,8 @@ export default function AICopilot() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [conversationId, setConversationId] = useState<number | null>(null);
+  const [activeAgent, setActiveAgent] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -35,6 +37,7 @@ export default function AICopilot() {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+    setActiveAgent('supervisor'); // Default to supervisor while routing
 
     const aiMessageId = (Date.now() + 1).toString();
     setMessages(prev => [...prev, { id: aiMessageId, role: 'ai', content: '' }]);
@@ -43,7 +46,11 @@ export default function AICopilot() {
       const response = await fetch('http://localhost:8000/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage.content, user_id: 1 }) // Hardcoded user_id for MVP
+        body: JSON.stringify({ 
+          message: userMessage.content, 
+          user_id: 1,
+          conversation_id: conversationId 
+        })
       });
 
       if (!response.ok) throw new Error('Network response was not ok');
@@ -69,6 +76,16 @@ export default function AICopilot() {
               }
               try {
                 const data = JSON.parse(dataStr);
+                
+                // Handle Metadata Events
+                if (data.conversation_id) {
+                  setConversationId(data.conversation_id);
+                }
+                if (data.active_agent) {
+                  setActiveAgent(data.active_agent);
+                }
+                
+                // Handle Content Streaming
                 if (data.content) {
                   setMessages(prev => 
                     prev.map(msg => 
@@ -81,7 +98,7 @@ export default function AICopilot() {
                   console.error('AI Error:', data.error);
                 }
               } catch (e) {
-                // Parsing error for incomplete chunks, usually safe to ignore in simple SSE
+                // Ignore incomplete JSON chunks safely
               }
             }
           }
@@ -98,7 +115,13 @@ export default function AICopilot() {
       );
     } finally {
       setIsLoading(false);
+      // We can choose to clear the active agent or leave it to show who answered last
+      // Let's leave it visible so the user knows which agent helped them
     }
+  };
+
+  const formatAgentName = (agent: string) => {
+    return agent.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
   return (
@@ -116,14 +139,25 @@ export default function AICopilot() {
         className={`fixed bottom-6 right-6 w-96 h-[600px] max-h-[80vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 origin-bottom-right border border-gray-200 z-50 ${isOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'}`}
       >
         {/* Header */}
-        <div className="bg-blue-600 p-4 flex justify-between items-center text-white">
-          <div className="flex items-center gap-2">
-            <Bot size={24} />
-            <h3 className="font-semibold text-lg">FinSphere AI</h3>
+        <div className="bg-blue-600 p-4 flex flex-col gap-2 text-white">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <Bot size={24} />
+              <h3 className="font-semibold text-lg">FinSphere AI</h3>
+            </div>
+            <button onClick={() => setIsOpen(false)} className="hover:bg-blue-700 p-1 rounded-md transition-colors">
+              <X size={20} />
+            </button>
           </div>
-          <button onClick={() => setIsOpen(false)} className="hover:bg-blue-700 p-1 rounded-md transition-colors">
-            <X size={20} />
-          </button>
+          
+          {/* AI Agents Status Tracker Widget */}
+          {activeAgent && (
+            <div className="flex items-center gap-2 text-xs bg-blue-700/50 p-2 rounded-lg border border-blue-500/30">
+              <Activity size={14} className={isLoading ? "animate-pulse text-green-400" : "text-blue-300"} />
+              <span className="opacity-80">Active Agent:</span>
+              <span className="font-medium text-blue-100">{formatAgentName(activeAgent)}</span>
+            </div>
+          )}
         </div>
 
         {/* Messages */}

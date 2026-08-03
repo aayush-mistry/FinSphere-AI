@@ -11,6 +11,7 @@ import {
   ArrowDownIcon, ArrowUpIcon, Activity, Wallet, PieChart as PieChartIcon, 
   ShoppingCart, Coffee, Film, Car, Zap, Package, DollarSign, Home, CheckCircle2, ShieldAlert
 } from "lucide-react";
+import FraudIntelligenceCenter from "@/components/FraudIntelligenceCenter";
 
 export default function Dashboard() {
   const [summary, setSummary] = useState({ totalNetWorth: 0, monthlyCashFlow: 0, financialHealthScore: 0 });
@@ -216,6 +217,12 @@ export default function Dashboard() {
           </Card>
           
         </div>
+        
+        {/* Row 3: Fraud Intelligence Center */}
+        <div className="col-span-4 lg:col-span-7">
+          <FraudIntelligenceCenter />
+        </div>
+
       </div>
     </div>
   );

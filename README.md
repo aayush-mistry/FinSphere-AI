@@ -55,6 +55,13 @@ uvicorn main:app --reload
 - **Privacy Mode:** Toggle to blur all sensitive financial numbers globally.
 - **Dynamic Routing:** Seamless navigation between Dashboard, AI Copilot, Digital Twin, Business CFO, and Settings.
 
+## Features (Phase 2 - Completed)
+- **Main Dashboard:** Comprehensive overview with Net Worth, Monthly Cash Flow, and Portfolio Allocation charts.
+- **Fraud Intelligence Center:** Real-time monitoring and alert system for flagged transactions directly integrated into the Dashboard.
+- **Digital Twin Simulation:** Interactive modeling tool for major life events (e.g., buying a house, evaluating emergency funds in case of job loss).
+- **Backend API:** FastAPI backend powering endpoints for transactions, portfolio statistics, and dashboard summaries.
+- **AI Agent Foundation:** LangGraph-powered AI backend endpoints integrated to provide conversational financial advice.
+
 ## Project Structure
 - `/frontend`: Next.js application containing the UI, components, and client-side logic.
 - `/backend`: FastAPI backend containing the SQLAlchemy schema (`models.py`), endpoints, and database connection logic.

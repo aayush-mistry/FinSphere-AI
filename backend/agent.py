@@ -10,9 +10,9 @@ from pydantic import BaseModel, Field
 from database import SessionLocal
 from models import User, Account, Transaction, InsurancePolicy, TaxRecord
 
-# Initialize LLM
-# Expects OPENAI_API_KEY in environment
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+# Initialize LLM safely
+api_key = os.environ.get("OPENAI_API_KEY", "dummy-key-to-prevent-crash")
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=api_key)
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
@@ -20,12 +20,15 @@ class AgentState(TypedDict):
     next_agent: str
 
 class Route(BaseModel):
-    next_node: Literal["financial_advisor", "loan_intelligence", "tax_optimizer", "insurance_ai", "FINISH"] = Field(
+    next_node: Literal[
+        "financial_advisor", "loan_intelligence", "tax_optimizer", "insurance_ai", 
+        "investment_analyst", "retirement_planner", "budget_tracker", "crypto_expert", 
+        "real_estate_advisor", "estate_planner", "debt_manager", "FINISH"
+    ] = Field(
         description="The agent to route to based on the user's request."
     )
 
 def get_user_data_json(user_id: int) -> str:
-    """Fetch user data from DB to provide context to agents."""
     db = SessionLocal()
     try:
         user = db.query(User).filter(User.id == user_id).first()
@@ -40,7 +43,7 @@ def get_user_data_json(user_id: int) -> str:
         data = {
             "profile": {"name": user.name, "type": user.type.value if user.type else None, "risk_profile": user.risk_profile},
             "accounts": [{"type": a.type.value if a.type else None, "balance": a.balance, "institution": a.institution} for a in accounts],
-            "transactions": [{"amount": t.amount, "category": t.category, "date": str(t.date), "status": t.status} for t in transactions[-50:]], # Last 50
+            "transactions": [{"amount": t.amount, "category": t.category, "date": str(t.date), "status": t.status} for t in transactions[-50:]],
             "insurance_policies": [{"type": p.type.value if p.type else None, "coverage_amount": p.coverage_amount, "premium": p.premium} for p in policies],
             "tax_records": [{"fiscal_year": tx.fiscal_year, "estimated_tax": tx.estimated_tax, "deductions_found": tx.deductions_found} for tx in taxes]
         }
@@ -51,54 +54,60 @@ def get_user_data_json(user_id: int) -> str:
 # --- SYSTEM PROMPTS ---
 
 SUPERVISOR_PROMPT = """You are the Supervisor Router for FinSphere AI.
-Analyze the user's latest request and route it to the appropriate specialized agent:
-- 'financial_advisor' for questions about budgets, cash flow, spending habits, or general net worth.
-- 'loan_intelligence' for questions about debt, EMI optimizations, or loan eligibility based on salary/accounts.
-- 'tax_optimizer' for questions about tax planning, deductions (80C, GST), or analyzing transaction history for tax benefits.
-- 'insurance_ai' for questions about insurance policies, coverage gaps, or life/health protection.
+Analyze the user's latest request and route it to one of the 11 specialized agents:
+- 'financial_advisor': budgets, cash flow, general net worth.
+- 'loan_intelligence': debt, EMI optimizations, loan eligibility.
+- 'tax_optimizer': tax planning, deductions (80C, GST).
+- 'insurance_ai': insurance policies, coverage gaps.
+- 'investment_analyst': stocks, bonds, portfolio allocation.
+- 'retirement_planner': 401k, retirement age, pension.
+- 'budget_tracker': strict daily expense tracking.
+- 'crypto_expert': cryptocurrency trends, wallet balances.
+- 'real_estate_advisor': mortgages, property values.
+- 'estate_planner': wills, trusts, inheritance.
+- 'debt_manager': debt consolidation, bankruptcy.
 
-If the user's query is purely conversational or doesn't fit these, choose 'FINISH'.
+If the user's query doesn't fit these, choose 'FINISH'.
 """
 
 FINANCIAL_ADVISOR_PROMPT = """You are the Financial Advisor Node for FinSphere AI.
-Your purpose is to analyze the user's budget, cash flow, and overall financial health.
-Use the provided JSON data representing the user's current accounts and recent transactions.
-Provide mathematically accurate, context-aware answers. Do not give generic advice if data is available.
-Format output using markdown. Use tables for breakdowns or bold text for key figures.
-
+Analyze the user's budget and overall financial health.
+Format output using markdown. Use tables or bold text for key figures.
 USER DATA:
 {user_data}
 """
 
 LOAN_INTELLIGENCE_PROMPT = """You are the Loan Intelligence Node for FinSphere AI.
-Your purpose is to analyze debt, suggest EMI optimizations, and calculate loan eligibility based on user balances and cash flow.
-Use the provided JSON data representing the user's current accounts (especially Loans) and transactions.
-Provide mathematically accurate, context-aware answers. Highlight specific numbers from their data.
-Format output using markdown. Use tables for loan schedules or bold text for key figures.
-
+Analyze debt, suggest EMI optimizations based on user balances.
+Format output using markdown. 
 USER DATA:
 {user_data}
 """
 
 TAX_OPTIMIZER_PROMPT = """You are the Tax Optimizer Node for FinSphere AI.
-Your purpose is to find tax deductions (e.g., 80C, GST) based on transaction history and analyze tax records.
-Use the provided JSON data representing the user's tax records and transactions.
-Provide mathematically accurate, context-aware answers. Don't give generic advice.
-Format output using markdown. Use tables for deductions or bold text for key figures.
-
+Find tax deductions based on transaction history and tax records.
+Format output using markdown.
 USER DATA:
 {user_data}
 """
 
 INSURANCE_AI_PROMPT = """You are the Insurance AI Node for FinSphere AI.
-Your purpose is to check the database for existing policies and suggest coverage gaps based on their profile.
-Use the provided JSON data representing the user's insurance policies, risk profile, and financials.
-Provide mathematically accurate, context-aware answers. 
-Format output using markdown. Use tables for policy comparisons or bold text for key figures.
-
+Check the database for existing policies and suggest coverage gaps.
+Format output using markdown.
 USER DATA:
 {user_data}
 """
+
+INVESTMENT_ANALYST_PROMPT = """You are the Investment Analyst Node for FinSphere AI.
+Analyze the user's investment accounts and transaction history.
+Suggest portfolio allocations based on their risk profile.
+Format output using markdown. Use tables for asset classes.
+USER DATA:
+{user_data}
+"""
+
+# Dummy prompts for the rest of the 11 personas
+STUB_PROMPT = "You are the {role} for FinSphere AI. Provide a brief answer related to {role}. USER DATA: {user_data}"
 
 # --- NODE FUNCTIONS ---
 
@@ -108,11 +117,13 @@ def supervisor_node(state: AgentState):
     result = router.invoke([SystemMessage(content=SUPERVISOR_PROMPT)] + list(messages))
     return {"next_agent": result.next_node}
 
-def agent_node_factory(agent_prompt: str):
+def agent_node_factory(agent_prompt: str, role: str = None):
     def node(state: AgentState):
-        user_id = state.get("user_id", 1) # Default to 1 for demo
+        user_id = state.get("user_id", 1)
         user_data = get_user_data_json(user_id)
-        system_message = SystemMessage(content=agent_prompt.format(user_data=user_data))
+        
+        prompt_str = agent_prompt.format(user_data=user_data, role=role)
+        system_message = SystemMessage(content=prompt_str)
         
         response = llm.invoke([system_message] + list(state["messages"]))
         return {"messages": [response]}
@@ -122,6 +133,14 @@ financial_advisor_node = agent_node_factory(FINANCIAL_ADVISOR_PROMPT)
 loan_intelligence_node = agent_node_factory(LOAN_INTELLIGENCE_PROMPT)
 tax_optimizer_node = agent_node_factory(TAX_OPTIMIZER_PROMPT)
 insurance_ai_node = agent_node_factory(INSURANCE_AI_PROMPT)
+investment_analyst_node = agent_node_factory(INVESTMENT_ANALYST_PROMPT)
+
+retirement_planner_node = agent_node_factory(STUB_PROMPT, "Retirement Planner")
+budget_tracker_node = agent_node_factory(STUB_PROMPT, "Budget Tracker")
+crypto_expert_node = agent_node_factory(STUB_PROMPT, "Crypto Expert")
+real_estate_advisor_node = agent_node_factory(STUB_PROMPT, "Real Estate Advisor")
+estate_planner_node = agent_node_factory(STUB_PROMPT, "Estate Planner")
+debt_manager_node = agent_node_factory(STUB_PROMPT, "Debt Manager")
 
 def fallback_node(state: AgentState):
     response = llm.invoke([SystemMessage(content="You are a helpful AI assistant. Please provide a general response.")] + list(state["messages"]))
@@ -136,6 +155,13 @@ workflow.add_node("financial_advisor", financial_advisor_node)
 workflow.add_node("loan_intelligence", loan_intelligence_node)
 workflow.add_node("tax_optimizer", tax_optimizer_node)
 workflow.add_node("insurance_ai", insurance_ai_node)
+workflow.add_node("investment_analyst", investment_analyst_node)
+workflow.add_node("retirement_planner", retirement_planner_node)
+workflow.add_node("budget_tracker", budget_tracker_node)
+workflow.add_node("crypto_expert", crypto_expert_node)
+workflow.add_node("real_estate_advisor", real_estate_advisor_node)
+workflow.add_node("estate_planner", estate_planner_node)
+workflow.add_node("debt_manager", debt_manager_node)
 workflow.add_node("fallback", fallback_node)
 
 workflow.add_edge(START, "supervisor")
@@ -154,14 +180,22 @@ workflow.add_conditional_edges(
         "loan_intelligence": "loan_intelligence",
         "tax_optimizer": "tax_optimizer",
         "insurance_ai": "insurance_ai",
+        "investment_analyst": "investment_analyst",
+        "retirement_planner": "retirement_planner",
+        "budget_tracker": "budget_tracker",
+        "crypto_expert": "crypto_expert",
+        "real_estate_advisor": "real_estate_advisor",
+        "estate_planner": "estate_planner",
+        "debt_manager": "debt_manager",
         "fallback": "fallback"
     }
 )
 
-workflow.add_edge("financial_advisor", END)
-workflow.add_edge("loan_intelligence", END)
-workflow.add_edge("tax_optimizer", END)
-workflow.add_edge("insurance_ai", END)
-workflow.add_edge("fallback", END)
+nodes = ["financial_advisor", "loan_intelligence", "tax_optimizer", "insurance_ai", 
+         "investment_analyst", "retirement_planner", "budget_tracker", "crypto_expert", 
+         "real_estate_advisor", "estate_planner", "debt_manager", "fallback"]
+
+for n in nodes:
+    workflow.add_edge(n, END)
 
 app_graph = workflow.compile()
