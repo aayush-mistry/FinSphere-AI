@@ -13,6 +13,11 @@ import {
   FileText, Users, Banknote
 } from "lucide-react";
 import FraudIntelligenceCenter from "@/components/FraudIntelligenceCenter";
+import FinancialHealthScore from "@/components/dashboard/FinancialHealthScore";
+import AISmartInsights from "@/components/dashboard/AISmartInsights";
+import GoalTracker from "@/components/dashboard/GoalTracker";
+import UpcomingBills from "@/components/dashboard/UpcomingBills";
+import AIAlerts from "@/components/dashboard/AIAlerts";
 import { useBusinessMode } from "@/context/BusinessModeContext";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { api } from "@/lib/api";
@@ -106,6 +111,7 @@ export default function Dashboard() {
           Unable to refresh dashboard data. {dashboardData.error}
         </div>
       )}
+      {!isBusinessMode && <AIAlerts />}
       
       {isBusinessMode ? (
         <div className="grid gap-4 md:grid-cols-3">
@@ -145,47 +151,49 @@ export default function Dashboard() {
           </Card>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card className="border-slate-100 shadow-sm bg-white">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-500">Total Net Worth</CardTitle>
-              <Wallet className="h-4 w-4 text-slate-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-slate-900">
-                {formatCurrency(summary.totalNetWorth)}
-              </div>
-              <p className="text-xs text-emerald-600 flex items-center mt-1">
-                <ArrowUpIcon className="mr-1 h-3 w-3" /> +2.5% from last month
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border-slate-100 shadow-sm bg-white">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-500">Monthly Cash Flow</CardTitle>
-              <Activity className="h-4 w-4 text-slate-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-slate-900">
-                {formatCurrency(summary.monthlyCashFlow)}
-              </div>
-              <p className="text-xs text-emerald-600 flex items-center mt-1">
-                <ArrowUpIcon className="mr-1 h-3 w-3" /> Healthy positive flow
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border-slate-100 shadow-sm bg-white">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-500">Financial Health Score</CardTitle>
-              <PieChartIcon className="h-4 w-4 text-slate-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-emerald-600">
-                {summary.financialHealthScore} <span className="text-sm text-slate-400 font-normal">/ 100</span>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">Excellent standing</p>
-            </CardContent>
-          </Card>
+        <div className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="border-slate-100 shadow-sm bg-white">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-slate-500">Total Net Worth</CardTitle>
+                <Wallet className="h-4 w-4 text-slate-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-slate-900">
+                  {formatCurrency(summary.totalNetWorth)}
+                </div>
+                <p className="text-xs text-emerald-600 flex items-center mt-1">
+                  <ArrowUpIcon className="mr-1 h-3 w-3" /> +2.5% from last month
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="border-slate-100 shadow-sm bg-white">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-slate-500">Monthly Cash Flow</CardTitle>
+                <Activity className="h-4 w-4 text-slate-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-slate-900">
+                  {formatCurrency(summary.monthlyCashFlow)}
+                </div>
+                <p className="text-xs text-emerald-600 flex items-center mt-1">
+                  <ArrowUpIcon className="mr-1 h-3 w-3" /> Healthy positive flow
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <FinancialHealthScore />
+          
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <div className="col-span-4 space-y-4">
+              <AISmartInsights />
+              <GoalTracker />
+            </div>
+            <div className="col-span-3 space-y-4">
+              <UpcomingBills />
+            </div>
+          </div>
         </div>
       )}
 
