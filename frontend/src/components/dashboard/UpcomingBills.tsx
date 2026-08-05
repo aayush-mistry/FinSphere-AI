@@ -26,7 +26,7 @@ export default function UpcomingBills() {
   };
 
   return (
-    <Card className="border-slate-100 shadow-sm bg-white h-full flex flex-col">
+    <Card className="border-slate-100 shadow-sm bg-white flex flex-col">
       <CardHeader className="pb-3 border-b border-slate-50">
         <CardTitle className="text-slate-900 text-base flex items-center gap-2">
           <CalendarDays className="h-4 w-4 text-indigo-500" />
