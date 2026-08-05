@@ -1,9 +1,10 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, ShieldAlert, Info, Clock, ArrowRight } from "lucide-react";
-import { MOCK_ALERTS } from "@/lib/mockData";
 import { AIAlert, AlertSeverity } from "@/lib/types";
+import { useFinancialProfile } from "@/context/FinancialProfileContext";
 
 export default function AIAlerts() {
+  const { alerts } = useFinancialProfile();
   const getAlertStyles = (severity: AlertSeverity) => {
     switch (severity) {
       case "critical": return "border-rose-200 bg-rose-50 text-rose-900 [&>svg]:text-rose-600";
@@ -22,7 +23,7 @@ export default function AIAlerts() {
 
   return (
     <div className="space-y-4">
-      {MOCK_ALERTS.map((alert: AIAlert) => (
+      {alerts.map((alert: AIAlert) => (
         <Alert key={alert.id} className={`transition-all duration-300 hover:shadow-md ${getAlertStyles(alert.severity)}`}>
           {getAlertIcon(alert.severity)}
           <AlertTitle className="text-sm font-semibold flex justify-between items-center">

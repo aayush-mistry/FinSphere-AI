@@ -11,6 +11,7 @@ from database import get_db, init_db
 from models import User, Account, Transaction, AccountType, AIConversation
 from agent import app_graph
 from langchain_core.messages import HumanMessage, AIMessage
+from health_engine import FinancialProfile, FinancialHealthEngine, HealthEngineResponse
 
 # Initialize db schemas on startup
 init_db()
@@ -55,6 +56,11 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
         "monthlyCashFlow": round(monthly_cash_flow, 2),
         "financialHealthScore": health_score
     }
+
+@app.post("/api/financial-health/calculate", response_model=HealthEngineResponse)
+async def calculate_financial_health(profile: FinancialProfile):
+    engine = FinancialHealthEngine(profile)
+    return await engine.generate_health_report()
 
 @app.get("/api/transactions")
 def get_recent_transactions(limit: int = 10, db: Session = Depends(get_db)):

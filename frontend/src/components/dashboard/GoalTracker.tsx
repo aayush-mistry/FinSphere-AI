@@ -1,11 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Target, Sparkles, Calendar } from "lucide-react";
-import { MOCK_GOALS } from "@/lib/mockData";
 import { formatCurrency } from "@/lib/format";
 import { Goal } from "@/lib/types";
+import { useFinancialProfile } from "@/context/FinancialProfileContext";
 
 export default function GoalTracker() {
+  const { goals } = useFinancialProfile();
   return (
     <Card className="border-slate-100 shadow-sm bg-white flex flex-col">
       <CardHeader className="pb-3 border-b border-slate-50">
@@ -16,7 +17,7 @@ export default function GoalTracker() {
       </CardHeader>
       <CardContent className="pt-4 flex-1">
         <div className="space-y-6">
-          {MOCK_GOALS.map((goal: Goal) => {
+          {goals.map((goal: Goal) => {
             const progress = (goal.savedAmount / goal.targetAmount) * 100;
             return (
               <div key={goal.id} className="space-y-2 group">

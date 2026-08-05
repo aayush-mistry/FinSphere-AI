@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, TrendingUp, AlertTriangle, Info, CheckCircle2, AlertCircle } from "lucide-react";
+import { Sparkles, AlertTriangle, Info, CheckCircle2, AlertCircle } from "lucide-react";
 import { Insight, InsightSeverity } from "@/lib/types";
-import { MOCK_INSIGHTS } from "@/lib/mockData";
+import { useFinancialProfile } from "@/context/FinancialProfileContext";
 
 export default function AISmartInsights() {
+  const { insights } = useFinancialProfile();
   const getSeverityStyles = (severity: InsightSeverity) => {
     switch (severity) {
       case "success": return "bg-emerald-50 border-emerald-100 text-emerald-800";
@@ -33,7 +34,7 @@ export default function AISmartInsights() {
       </CardHeader>
       <CardContent className="pt-4 flex-1 overflow-y-auto custom-scrollbar">
         <div className="space-y-3">
-          {MOCK_INSIGHTS.map((insight: Insight) => (
+          {insights.map((insight: Insight) => (
             <div 
               key={insight.id} 
               className={`p-3 rounded-lg border ${getSeverityStyles(insight.severity)} hover:shadow-md transition-shadow duration-200 cursor-default flex gap-3`}

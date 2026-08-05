@@ -8,7 +8,7 @@ import {
   PieChart, Pie, Cell, ResponsiveContainer, Legend
 } from "recharts";
 import { 
-  ArrowUpIcon, Activity, Wallet, PieChart as PieChartIcon, 
+  ArrowUpIcon, Activity, Wallet, 
   ShoppingCart, Coffee, Film, Car, Zap, Package, DollarSign, Home, CheckCircle2, ShieldAlert,
   FileText, Users, Banknote
 } from "lucide-react";
@@ -185,13 +185,13 @@ export default function Dashboard() {
           
           <FinancialHealthScore />
           
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 items-start">
             <div className="col-span-4 space-y-4">
               <AISmartInsights />
-              <GoalTracker />
             </div>
             <div className="col-span-3 space-y-4">
               <UpcomingBills />
+              <GoalTracker />
             </div>
           </div>
         </div>

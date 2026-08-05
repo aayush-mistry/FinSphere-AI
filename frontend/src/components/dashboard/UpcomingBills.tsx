@@ -1,11 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarDays, CreditCard, Zap, Home, Film, Wallet } from "lucide-react";
-import { MOCK_BILLS } from "@/lib/mockData";
 import { formatCurrency } from "@/lib/format";
 import { Bill, BillStatus } from "@/lib/types";
+import { useFinancialProfile } from "@/context/FinancialProfileContext";
 
 export default function UpcomingBills() {
+  const { bills } = useFinancialProfile();
   const getBillIcon = (name: string) => {
     const lowerName = name.toLowerCase();
     if (lowerName.includes("electricity")) return <Zap className="h-4 w-4 text-amber-500" />;
@@ -35,7 +36,7 @@ export default function UpcomingBills() {
       </CardHeader>
       <CardContent className="pt-4 flex-1">
         <div className="relative border-l-2 border-slate-100 ml-3 space-y-6">
-          {MOCK_BILLS.map((bill: Bill) => (
+          {bills.map((bill: Bill) => (
             <div key={bill.id} className="relative pl-6">
               {/* Timeline Dot */}
               <div className="absolute -left-[11px] top-1 h-5 w-5 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center">
