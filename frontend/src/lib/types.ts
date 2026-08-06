@@ -40,7 +40,7 @@ export type FraudScanResult = {
 
 // New Types for Dashboard Widgets
 
-export type InsightSeverity = "success" | "info" | "warning" | "critical";
+export type InsightSeverity = "low" | "medium" | "high" | "critical";
 
 export type Insight = {
   id: string;
@@ -48,6 +48,12 @@ export type Insight = {
   description: string;
   severity: InsightSeverity;
   category: string;
+  confidenceScore: number;
+  financialImpact: string;
+  reasoning: string;
+  suggestedAction: string;
+  relatedTransactions?: string[];
+  timestamp: string;
 };
 
 export type Goal = {
