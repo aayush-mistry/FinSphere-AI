@@ -1,11 +1,11 @@
 export function formatCurrency(value: number) {
-  return value.toLocaleString("en-US", {
+  return value.toLocaleString("en-IN", {
     style: "currency",
-    currency: "USD",
+    currency: "INR",
     minimumFractionDigits: 2,
   });
 }
 
 export function formatCompactCurrency(value: number) {
-  return `$${(value / 1000).toFixed(0)}k`;
+  return `₹${(value / 1000).toFixed(0)}k`;
 }
