@@ -1,26 +1,239 @@
-# FinSphere AI
+# 💰 FinSphere AI
 
-FinSphere AI is an Autonomous Financial OS built as a hackathon MVP. It features a modern, clean UI, AI Copilot, Digital Twin, and a comprehensive Business CFO dashboard.
+> **A Balance-First Financial Operating System**
 
-## Tech Stack
+FinSphere AI is an intelligent financial operating system designed to help users understand, manage, and grow their finances from a single source of truth—their **Balance**.
 
-### Frontend
-- **Framework:** Next.js 14 (App Router)
-- **Styling:** Tailwind CSS (v4) with shadcn/ui
-- **Icons:** Lucide React
-- **Authentication:** Clerk / Auth0
-- **Aesthetic:** Clean, modern "Light Mode" (white background, very subtle gray drop shadows, deep emerald/navy accents).
+Unlike traditional finance apps that separate budgeting, investments, bills, taxes, and forecasting into isolated modules, FinSphere AI builds every financial insight from one unified **Balance Engine**.
 
-### Backend
-- **Framework:** FastAPI (Python)
-- **Database:** PostgreSQL
-- **ORM:** SQLAlchemy / Prisma
-- **Core Models:** Users, Accounts, Transactions, Insurance Policies, Tax Records, AI Conversations.
+The goal is simple:
 
-## Getting Started
+> **Know where your money is, where it's going, and where it will be.**
 
-### 1. Frontend Setup
-Navigate to the frontend directory and start the Next.js development server:
+---
+
+# 🚀 Vision
+
+FinSphere AI isn't just another expense tracker.
+
+It is a Balance-First Financial Operating System where every feature is connected through a single financial core.
+
+Instead of jumping between multiple apps to track spending, investments, bills, taxes, and financial planning, users manage everything from one intelligent platform.
+
+---
+
+# 🏗️ Core Philosophy
+
+Everything begins with the **Balance Engine**.
+
+```
+                    Transactions
+                          │
+        ┌─────────────────┼─────────────────┐
+        ▼                 ▼                 ▼
+     Income          Expenses         Transfers
+        │                 │                 │
+        └─────────────────┼─────────────────┘
+                          ▼
+                  Balance Engine
+                          │
+        ┌──────────┬──────────┬──────────┐
+        ▼          ▼          ▼          ▼
+    Accounts   Cash Flow  Net Worth  Monthly Summary
+                          │
+                          ▼
+                 Future Financial Modules
+```
+
+Every future module consumes data from the Balance Engine.
+
+No module calculates financial data independently.
+
+---
+
+# ✨ Current Features
+
+## 🔐 Authentication
+
+- Secure user authentication
+- Protected routes
+- User profile management
+
+---
+
+## 💰 Balance Engine
+
+The heart of FinSphere AI.
+
+Calculates:
+
+- Total Balance
+- Available Cash
+- Net Worth
+- Monthly Income
+- Monthly Expenses
+- Monthly Savings
+- Cash Flow
+- Account Summary
+- Financial Position
+
+---
+
+## 🏦 Account Management
+
+Manage multiple financial accounts including:
+
+- Checking Accounts
+- Savings Accounts
+- Credit Cards
+- Investment Accounts
+- Crypto Wallets
+- Business Accounts
+
+---
+
+## 💳 Transaction Management
+
+Track all financial activities.
+
+Supported transaction types include:
+
+- Income
+- Expenses
+- Transfers
+- Refunds
+- Salary
+- Investments
+- Loan Payments
+- Interest
+- Dividends
+
+---
+
+## 📊 Balance Workspace
+
+The homepage of FinSphere AI.
+
+Displays:
+
+- Total Balance
+- Net Worth
+- Available Cash
+- Monthly Income
+- Monthly Expenses
+- Monthly Savings
+- Cash Flow
+- Recent Transactions
+- Account Overview
+
+---
+
+# 🛣️ Development Roadmap
+
+## ✅ Phase 1 — Financial Core
+
+- Authentication
+- Balance Engine
+- Account Management
+- Transaction Management
+- Cash Flow Engine
+- Balance Workspace
+
+---
+
+## 🚧 Phase 2 — Money Management
+
+- Expenses
+- Investments
+- Bills
+- Taxes
+
+---
+
+## 📈 Phase 3 — Forecasting
+
+- Future Balance Projection
+- Expense Prediction
+- Investment Projection
+- Net Worth Forecast
+- Savings Forecast
+
+---
+
+## 🤖 Phase 4 — Financial Intelligence
+
+- AI Financial Advisor
+- Smart Recommendations
+- Financial Explanations
+- What-if Simulations
+- Personalized Insights
+
+---
+
+## 🏢 Phase 5 — Business Finance
+
+- Business Dashboard
+- Payroll Management
+- Invoice Tracking
+- Business Cash Flow
+- AI CFO Assistant
+
+---
+
+# 🛠️ Tech Stack
+
+## Frontend
+
+- Next.js 15
+- React
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Framer Motion
+- Lucide React
+
+## Backend
+
+- FastAPI
+- PostgreSQL
+- SQLAlchemy
+
+## Future AI Stack
+
+- LangGraph
+- OpenAI
+- Gemini
+
+---
+
+# 📂 Project Structure
+
+```
+FinSphere-AI/
+│
+├── frontend/
+│   ├── app/
+│   ├── components/
+│   ├── hooks/
+│   ├── lib/
+│   ├── services/
+│   └── types/
+│
+├── backend/
+│   ├── api/
+│   ├── models/
+│   ├── services/
+│   ├── database/
+│   └── main.py
+│
+└── README.md
+```
+
+---
+
+# 🚀 Getting Started
+
+## Frontend
 
 ```bash
 cd frontend
@@ -28,130 +241,94 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
+Runs on:
 
-### 2. Backend Setup
-Navigate to the backend directory, activate the virtual environment, and start the FastAPI server:
+```
+http://localhost:3000
+```
+
+---
+
+## Backend
 
 ```bash
 cd backend
-# Create virtual environment if you haven't already
+
 python -m venv venv
 
-# Activate (Windows)
-.\venv\Scripts\Activate
-# Activate (Mac/Linux)
+# Windows
+.\venv\Scripts\activate
+
+# macOS / Linux
 source venv/bin/activate
 
-# Install dependencies
-pip install fastapi uvicorn sqlalchemy pydantic psycopg2-binary
+pip install -r requirements.txt
 
-# Run the server
 uvicorn main:app --reload
 ```
 
-## Features (Phase 1)
-- **Global App Shell:** Fully responsive Sidebar and Top Header navigation.
-- **Privacy Mode:** Toggle to blur all sensitive financial numbers globally.
-- **Dynamic Routing:** Seamless navigation between Dashboard, AI Copilot, Digital Twin, Business CFO, and Settings.
+Backend runs on:
 
-## Features (Phase 2 - Completed)
-- **Main Dashboard:** Comprehensive overview with Net Worth, Monthly Cash Flow, and Portfolio Allocation charts.
-- **Fraud Intelligence Center:** Real-time monitoring and alert system for flagged transactions directly integrated into the Dashboard.
-- **Digital Twin Simulation:** Interactive modeling tool for major life events (e.g., buying a house, evaluating emergency funds in case of job loss).
-- **Backend API:** FastAPI backend powering endpoints for transactions, portfolio statistics, and dashboard summaries.
-- **AI Agent Foundation:** LangGraph-powered AI backend endpoints integrated to provide conversational financial advice.
-
-## Project Structure
-- `/frontend`: Next.js application containing the UI, components, and client-side logic.
-- `/backend`: FastAPI backend containing the SQLAlchemy schema (`models.py`), endpoints, and database connection logic.
-
-## Backend Schema
-
-The comprehensive Database schema in `backend/models.py`:
-
-```python
-from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, JSON, Date, Enum
-from sqlalchemy.orm import declarative_base, relationship
-import enum
-
-Base = declarative_base()
-
-class UserType(str, enum.Enum):
-    PERSONAL = "Personal"
-    BUSINESS = "Business"
-
-class AccountType(str, enum.Enum):
-    CHECKING = "Checking"
-    SAVINGS = "Savings"
-    LOAN = "Loan"
-    INVESTMENT = "Investment"
-
-class InsuranceType(str, enum.Enum):
-    LIFE = "Life"
-    HEALTH = "Health"
-    AUTO = "Auto"
-
-class User(Base):
-    __tablename__ = "users"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    type = Column(Enum(UserType))
-    risk_profile = Column(String)
-    
-    accounts = relationship("Account", back_populates="user")
-    policies = relationship("InsurancePolicy", back_populates="user")
-    tax_records = relationship("TaxRecord", back_populates="user")
-    conversations = relationship("AIConversation", back_populates="user")
-
-class Account(Base):
-    __tablename__ = "accounts"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    type = Column(Enum(AccountType))
-    balance = Column(Float, default=0.0)
-    institution = Column(String)
-    
-    user = relationship("User", back_populates="accounts")
-    transactions = relationship("Transaction", back_populates="account")
-
-class Transaction(Base):
-    __tablename__ = "transactions"
-    id = Column(Integer, primary_key=True, index=True)
-    account_id = Column(Integer, ForeignKey("accounts.id"))
-    amount = Column(Float)
-    date = Column(Date)
-    category = Column(String)
-    status = Column(String)
-    is_flagged_fraud = Column(Boolean, default=False)
-    
-    account = relationship("Account", back_populates="transactions")
-
-class InsurancePolicy(Base):
-    __tablename__ = "insurance_policies"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    type = Column(Enum(InsuranceType))
-    coverage_amount = Column(Float)
-    premium = Column(Float)
-    
-    user = relationship("User", back_populates="policies")
-
-class TaxRecord(Base):
-    __tablename__ = "tax_records"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    fiscal_year = Column(Integer)
-    estimated_tax = Column(Float)
-    deductions_found = Column(Float)
-    
-    user = relationship("User", back_populates="tax_records")
-
-class AIConversation(Base):
-    __tablename__ = "ai_conversations"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    message_history = Column(JSON)
-    
-    user = relationship("User", back_populates="conversations")
 ```
+http://localhost:8000
+```
+
+---
+
+# 🎯 Design Principles
+
+FinSphere AI follows a few simple principles:
+
+- One source of financial truth
+- Clean and minimal interface
+- Modular architecture
+- Reusable business logic
+- Predictive financial insights
+- Scalable for personal and business finance
+
+---
+
+# 📌 Project Status
+
+Current Version:
+
+```
+Phase 1 — Financial Core
+```
+
+Current Focus:
+
+```
+Building the Balance Engine as the foundation for all future financial modules.
+```
+
+---
+
+# 🌟 Future Vision
+
+The Balance Engine will become the foundation for:
+
+- Expense Analytics
+- Investment Portfolio
+- Bill Management
+- Tax Planning
+- Financial Forecasting
+- AI Financial Advisor
+- Business CFO
+- Digital Financial Twin
+
+Every feature will consume data from the same financial core.
+
+---
+
+# 🤝 Contributing
+
+Contributions, ideas, and feedback are always welcome.
+
+Feel free to fork the repository, open issues, or submit pull requests.
+
+---
+
+# 📄 License
+
+This project is licensed under the MIT License.
