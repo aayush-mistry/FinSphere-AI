@@ -6,7 +6,8 @@ import {
   LayoutDashboard, 
   Settings,
   PieChart,
-  Wallet
+  Wallet,
+  Activity
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -15,6 +16,7 @@ export default function Sidebar() {
   const navItems = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
     { name: "Income", href: "/income", icon: Wallet },
+    { name: "Cash Flow", href: "/cashflow", icon: Activity },
     { name: "Expenses", href: "/expenses", icon: PieChart },
   ];
 
