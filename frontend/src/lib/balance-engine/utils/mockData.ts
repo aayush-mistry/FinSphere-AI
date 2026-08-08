@@ -161,7 +161,7 @@ export const mockTransactions: Transaction[] = [
     description: 'Internet Bill',
     amount: -1500,
     type: TransactionType.EXPENSE,
-    date: new Date(Date.now() - 10 * 86400000).toISOString(),
+    date: new Date(Date.now() - 7 * 86400000).toISOString(),
     status: TransactionStatus.COMPLETED,
     currency: 'INR',
     tags: ['utility', 'fixed']
@@ -174,7 +174,7 @@ export const mockTransactions: Transaction[] = [
     description: 'Ride to airport',
     amount: -1200,
     type: TransactionType.EXPENSE,
-    date: new Date(Date.now() - 8 * 86400000).toISOString(),
+    date: new Date(Date.now() - 5 * 86400000).toISOString(),
     status: TransactionStatus.COMPLETED,
     currency: 'INR',
     tags: ['travel']
