@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, 
   Settings,
-  PieChart
+  PieChart,
+  Wallet
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -13,6 +14,7 @@ export default function Sidebar() {
 
   const navItems = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
+    { name: "Income", href: "/income", icon: Wallet },
     { name: "Expenses", href: "/expenses", icon: PieChart },
   ];
 
