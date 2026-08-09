@@ -3,9 +3,10 @@ import { mockTransactions } from '../../../../lib/balance-engine/utils/mockData'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const transaction = mockTransactions.find(t => t.id === params.id);
+  const { id } = await params;
+  const transaction = mockTransactions.find(t => t.id === id);
   
   if (!transaction) {
     return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });

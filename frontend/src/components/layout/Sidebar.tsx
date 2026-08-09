@@ -7,7 +7,8 @@ import {
   Settings,
   PieChart,
   Wallet,
-  Activity
+  Activity,
+  Target
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -18,6 +19,7 @@ export default function Sidebar() {
     { name: "Income", href: "/income", icon: Wallet },
     { name: "Cash Flow", href: "/cashflow", icon: Activity },
     { name: "Expenses", href: "/expenses", icon: PieChart },
+    { name: "Goals", href: "/goals", icon: Target },
   ];
 
   return (
