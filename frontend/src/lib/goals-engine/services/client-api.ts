@@ -1,4 +1,4 @@
-import { GoalPredictionSummaryOut, GoalComparisonItem, GoalSummaryOut, GoalOut, GoalDetailOut, GoalContributionOut, GoalProjectionOut } from '../types';
+import { GoalPredictionSummaryOut, GoalComparisonItem, GoalSummaryOut, GoalOut, GoalDetailOut, GoalContributionOut, GoalProjectionOut, GoalSimulationScenario, GoalSimulationOut } from '../types';
 
 export const GoalsClientAPI = {
   async getSummary(userId: number): Promise<GoalSummaryOut> {
@@ -41,6 +41,19 @@ export const GoalsClientAPI = {
     const res = await fetch(`/api/goals/${goalId}/projection?user_id=${userId}`);
     if (!res.ok) throw new Error('Failed to fetch goal projection');
     return res.json();
+  },
+
+  async simulateGoalProjection(goalId: number, userId: number, scenario: GoalSimulationScenario): Promise<GoalSimulationOut> {
+    const res = await fetch(`/api/goals/${goalId}/simulate?user_id=${userId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(scenario)
+    });
+    if (!res.ok) throw new Error('Failed to simulate goal projection');
+    return res.json();
   }
 };
+
 

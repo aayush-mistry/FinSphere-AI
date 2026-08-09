@@ -93,3 +93,37 @@ export interface GoalProjectionOut {
   confidence_reason: string | null;
   monthly_projection_data: MonthlyProjectionPoint[] | null;
 }
+
+export interface GoalSimulationScenario {
+  additional_monthly_savings: number;
+  monthly_expense_change: number;
+  monthly_income_change: number;
+  one_time_contribution: number;
+}
+
+export interface BaselineComparisonData {
+  months: number;
+  completion_date: string;
+  target_status: string;
+}
+
+export interface SimulationComparisonData {
+  months: number;
+  completion_date: string;
+  target_status: string;
+}
+
+export interface ComparisonResultData {
+  months_saved: number;
+  months_lost: number;
+  status: string;
+}
+
+export interface GoalSimulationOut {
+  goal_id: number;
+  scenario: GoalSimulationScenario;
+  baseline: BaselineComparisonData;
+  simulation: SimulationComparisonData;
+  comparison: ComparisonResultData;
+  monthly_projection: MonthlyProjectionPoint[];
+}

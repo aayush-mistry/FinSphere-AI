@@ -8,9 +8,12 @@ import { SavingsPace } from './SavingsPace';
 import { ProjectionChart } from './ProjectionChart';
 import { ContributionHistory } from './ContributionHistory';
 import { FinancialInsight } from './FinancialInsight';
+import { GoalSimulator } from './simulator/GoalSimulator';
+import { GoalSimulationOut } from '../../types';
 
 export function GoalDetailPage({ goalId }: { goalId: number }) {
   const { data, isLoading, isError } = useGoalIntelligence(goalId);
+  const [simulationData, setSimulationData] = React.useState<GoalSimulationOut | null>(null);
 
   if (isLoading) {
     return (
@@ -98,7 +101,8 @@ export function GoalDetailPage({ goalId }: { goalId: number }) {
           />
           {projection.projection_available && projection.monthly_projection_data ? (
             <ProjectionChart 
-              data={projection.monthly_projection_data} 
+              data={projection.monthly_projection_data}
+              simulatedData={simulationData?.monthly_projection || undefined}
               targetAmount={detail.target_amount}
               targetDate={detail.target_date}
             />
@@ -119,6 +123,10 @@ export function GoalDetailPage({ goalId }: { goalId: number }) {
           <FinancialInsight goal={detail} projection={projection} />
         </div>
       </div>
+      <GoalSimulator 
+        goalId={goalId} 
+        onSimulationData={setSimulationData} 
+      />
     </div>
   );
 }

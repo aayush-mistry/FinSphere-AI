@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { GoalsClientAPI } from '../services/client-api';
-import { GoalDetailOut } from '../types';
+import { GoalDetailOut, GoalSimulationScenario } from '../types';
 
 const DEFAULT_USER_ID = 1;
 
@@ -63,5 +63,12 @@ export const useGoalIntelligence = (goalId: number, userId: number = DEFAULT_USE
       };
     },
     enabled: !!goalId
+  });
+};
+
+export const useSimulateGoal = (goalId: number, userId: number = DEFAULT_USER_ID) => {
+  return useMutation({
+    mutationFn: (scenario: GoalSimulationScenario) => 
+      GoalsClientAPI.simulateGoalProjection(goalId, userId, scenario)
   });
 };
