@@ -1,5 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { Calendar, Target, TrendingUp, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { formatCurrency } from '@/lib/format';
 import { PrivacyMask, usePrivacyMode } from '@/lib/privacy';
@@ -64,12 +64,14 @@ export function GoalCard({ goal, prediction }: GoalCardProps) {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex flex-col h-full"
-    >
-      <div className="flex justify-between items-start mb-4">
+    <Link href={`/goals/${goal.id}`} className="block h-full outline-none">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex flex-col h-full hover:shadow-md hover:border-indigo-100 transition-all cursor-pointer group"
+      >
+        <div className="flex justify-between items-start mb-4">
+
         <div>
           <h3 className="text-xl font-bold text-slate-900">{goal.name}</h3>
           <p className="text-sm text-slate-500">{goal.category}</p>
@@ -147,8 +149,9 @@ export function GoalCard({ goal, prediction }: GoalCardProps) {
           <div className="bg-indigo-50/50 p-3 rounded-xl border border-indigo-100/50 text-xs text-indigo-700 font-medium leading-relaxed">
             {projectionSentence}
           </div>
-        )}
-      </div>
-    </motion.div>
+          )}
+        </div>
+      </motion.div>
+    </Link>
   );
 }

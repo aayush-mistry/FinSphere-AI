@@ -36,13 +36,32 @@ export const useGoalsDetailedList = (userId: number = DEFAULT_USER_ID) => {
   return useQuery({
     queryKey: ['goals-detailed-list', userId],
     queryFn: async () => {
-      // First get the list of goals
       const goals = await GoalsClientAPI.getGoals(userId);
-      // Then fetch details for each goal to get calculated properties like required_monthly_contribution
       const detailedGoals = await Promise.all(
         goals.map(g => GoalsClientAPI.getGoalDetail(g.id, userId))
       );
       return detailedGoals;
     }
+  });
+};
+
+export const useGoalIntelligence = (goalId: number, userId: number = DEFAULT_USER_ID) => {
+  return useQuery({
+    queryKey: ['goal-intelligence', goalId, userId],
+    queryFn: async () => {
+      // Fetch detail, projection, and contributions sequentially or in parallel
+      const [detail, projection, contributions] = await Promise.all([
+        GoalsClientAPI.getGoalDetail(goalId, userId),
+        GoalsClientAPI.getGoalProjection(goalId, userId),
+        GoalsClientAPI.getGoalContributions(goalId, userId)
+      ]);
+      
+      return {
+        detail,
+        projection,
+        contributions
+      };
+    },
+    enabled: !!goalId
   });
 };

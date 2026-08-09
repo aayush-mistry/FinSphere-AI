@@ -59,3 +59,37 @@ export interface GoalDetailOut extends GoalOut {
   average_monthly_cashflow: number;
   feasibility: string;
 }
+
+export interface GoalContributionOut {
+  id: number;
+  goal_id: number;
+  transaction_id: string | null;
+  amount: number;
+  contribution_date: string;
+  created_at: string;
+}
+
+export interface MonthlyProjectionPoint {
+  month_index: number;
+  projected_date: string;
+  projected_amount: number;
+}
+
+export interface GoalProjectionOut {
+  goal_id: number;
+  projection_available: boolean;
+  reason: string | null;
+  projection_basis: string | null;
+  current_amount: number | null;
+  target_amount: number | null;
+  remaining_amount: number | null;
+  monthly_projection: number | null;
+  months_required: number | null;
+  projected_completion_date: string | null;
+  target_date: string | null;
+  schedule_status: string | null;
+  difference_from_required: number | null;
+  confidence: string | null;
+  confidence_reason: string | null;
+  monthly_projection_data: MonthlyProjectionPoint[] | null;
+}

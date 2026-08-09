@@ -1,4 +1,4 @@
-import { GoalPredictionSummaryOut, GoalComparisonItem, GoalSummaryOut, GoalOut, GoalDetailOut } from '../types';
+import { GoalPredictionSummaryOut, GoalComparisonItem, GoalSummaryOut, GoalOut, GoalDetailOut, GoalContributionOut, GoalProjectionOut } from '../types';
 
 export const GoalsClientAPI = {
   async getSummary(userId: number): Promise<GoalSummaryOut> {
@@ -29,5 +29,18 @@ export const GoalsClientAPI = {
     const res = await fetch(`/api/goals/detail?goal_id=${goalId}&user_id=${userId}`);
     if (!res.ok) throw new Error('Failed to fetch goal detail');
     return res.json();
+  },
+
+  async getGoalContributions(goalId: number, userId: number): Promise<GoalContributionOut[]> {
+    const res = await fetch(`/api/goals/${goalId}/contributions?user_id=${userId}`);
+    if (!res.ok) throw new Error('Failed to fetch goal contributions');
+    return res.json();
+  },
+
+  async getGoalProjection(goalId: number, userId: number): Promise<GoalProjectionOut> {
+    const res = await fetch(`/api/goals/${goalId}/projection?user_id=${userId}`);
+    if (!res.ok) throw new Error('Failed to fetch goal projection');
+    return res.json();
   }
 };
+
