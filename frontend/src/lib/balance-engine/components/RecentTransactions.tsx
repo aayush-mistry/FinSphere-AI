@@ -13,35 +13,52 @@ export const RecentTransactions = () => {
 
   const [amount, setAmount] = useState("");
   const [mode, setMode] = useState("cash");
+  const [category, setCategory] = useState("Food & Dining");
   const [name, setName] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
-    if (!amount || !name) return;
+  const handleSave = async () => {
+    if (!amount || !name || !category) return;
 
+    setIsSaving(true);
+    
     const newTransaction: Transaction = {
       id: `txn_manual_${Date.now()}`,
       accountId: 'acc_checking_1', // default mock account
-      category: mode === 'cash' ? 'Cash' : 'Transfer',
+      category: category,
       merchant: name,
       description: `Manual ${mode} entry`,
-      amount: -Math.abs(parseFloat(amount)), // Assuming expense for this form, or we can make it dynamic. Let's assume expense.
+      amount: -Math.abs(parseFloat(amount)), // Assuming expense for this form
       type: TransactionType.EXPENSE,
       date: new Date().toISOString(),
       status: TransactionStatus.COMPLETED,
       currency: 'INR',
-      tags: ['manual', mode]
+      tags: ['manual', mode, category.toLowerCase()]
     };
 
-    queryClient.setQueryData(['balance-engine', 'transactions'], (old: Transaction[] | undefined) => {
-      if (!old) return [newTransaction];
-      return [newTransaction, ...old];
-    });
-
-    setIsOpen(false);
-    setAmount("");
-    setName("");
-    setMode("cash");
+    try {
+      // Call the API to save the transaction to the backend/mock memory
+      await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTransaction)
+      });
+      
+      // Invalidate queries so that balance, expenses, and cashflow charts update
+      await queryClient.invalidateQueries({ queryKey: ['balance-engine'] });
+      await queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      await queryClient.invalidateQueries({ queryKey: ['cashflow'] });
+    } catch (error) {
+      console.error("Failed to save transaction", error);
+    } finally {
+      setIsSaving(false);
+      setIsOpen(false);
+      setAmount("");
+      setName("");
+      setMode("cash");
+      setCategory("Food & Dining");
+    }
   };
 
   if (isLoading || !transactions) return <div className="h-64 bg-slate-100 animate-pulse rounded-2xl"></div>;
@@ -63,9 +80,9 @@ export const RecentTransactions = () => {
             } />
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add Cash Transaction</DialogTitle>
+                <DialogTitle>Add Transaction</DialogTitle>
                 <DialogDescription>
-                  Enter the details for your manual cash transaction.
+                  Enter the details for your new transaction.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
@@ -79,6 +96,26 @@ export const RecentTransactions = () => {
                     placeholder="0.00" 
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" 
                   />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="category" className="text-sm font-medium text-slate-700">Category</label>
+                  <select 
+                    id="category" 
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white"
+                  >
+                    <option value="Food & Dining">Food & Dining</option>
+                    <option value="Transportation">Transportation</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Housing">Housing</option>
+                    <option value="Utilities">Utilities</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Personal Care">Personal Care</option>
+                    <option value="Education">Education</option>
+                    <option value="Miscellaneous">Miscellaneous</option>
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="mode" className="text-sm font-medium text-slate-700">Mode of Transaction</label>
@@ -105,18 +142,20 @@ export const RecentTransactions = () => {
                   />
                 </div>
               </div>
-              <DialogFooter showCloseButton={false}>
+              <DialogFooter className="sm:justify-end">
                 <button 
                   onClick={() => setIsOpen(false)}
+                  disabled={isSaving}
                   className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={handleSave}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors"
+                  disabled={isSaving || !amount || !name || !category}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50"
                 >
-                  Save Transaction
+                  {isSaving ? "Saving..." : "Save Transaction"}
                 </button>
               </DialogFooter>
             </DialogContent>
