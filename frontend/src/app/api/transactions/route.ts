@@ -15,3 +15,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const userIdStr = searchParams.get('user_id');
+    
+    // Default to returning all if no user_id, or filter by user_id
+    // Since mockTransactions doesn't currently strictly map user_id on all items,
+    // we return all, but we could filter if mockTransactions had account ownership mapped perfectly.
+    // For now, return all mockTransactions as requested for the backend to consume.
+    return NextResponse.json(mockTransactions);
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}

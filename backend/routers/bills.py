@@ -6,7 +6,7 @@ import models
 import schemas
 from database import get_db
 from datetime import datetime, timezone, date
-from services import recurring_expense_service, upcoming_bills_service
+from services import recurring_expense_service, upcoming_bills_service, bill_matching_service
 
 router = APIRouter(
     prefix="/api/bills",
@@ -135,3 +135,15 @@ def delete_bill(bill_id: int, user_id: int, db: Session = Depends(get_db)):
     db.delete(db_bill)
     db.commit()
     return None
+
+@router.get("/reconciliation", response_model=schemas.BillReconciliationResponse)
+def get_bill_reconciliation(
+    user_id: int = Query(..., description="The user ID to fetch bills for"),
+    start_date: str = Query(..., description="Start date for reconciliation YYYY-MM-DD"),
+    end_date: str = Query(..., description="End date for reconciliation YYYY-MM-DD"),
+    db: Session = Depends(get_db)
+):
+    """
+    Deterministically matches actual historical transactions against expected bill occurrences.
+    """
+    return bill_matching_service.reconcile_bills(user_id, start_date, end_date, db)

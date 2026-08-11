@@ -18,3 +18,16 @@ def verify_transaction(transaction_id: str, user_id: int) -> bool:
         print(f"Error verifying transaction: {e}")
         # In a strict financial system, if we can't reach the service, we reject it.
         return False
+
+def get_user_transactions(user_id: int):
+    """
+    Fetches all candidate transactions for a user from the frontend mock API.
+    """
+    try:
+        response = httpx.get(f"{TRANSACTIONS_API_URL}?user_id={user_id}", timeout=5.0)
+        if response.status_code == 200:
+            return response.json()
+        return []
+    except Exception as e:
+        print(f"Error fetching user transactions: {e}")
+        return []

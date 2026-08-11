@@ -321,3 +321,25 @@ class UpcomingBillsSummaryResponse(BaseModel):
     next_7_days_amount: float
     next_30_days_amount: float
     next_90_days_amount: float
+
+class BillMatchResult(BaseModel):
+    bill_id: int
+    occurrence_date: str
+    expected_amount: float
+    transaction_id: Optional[str]
+    transaction_date: Optional[str]
+    actual_amount: Optional[float]
+    amount_difference: Optional[float]
+    days_difference: Optional[int]
+    score: int
+    matched: bool
+    match_reasons: List[str]
+
+class BillReconciliationResponse(BaseModel):
+    user_id: int
+    start_date: str
+    end_date: str
+    total_occurrences: int
+    matched_occurrences: int
+    unmatched_occurrences: int
+    matches: List[BillMatchResult]
