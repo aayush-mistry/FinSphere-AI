@@ -268,3 +268,56 @@ class BillOut(BillBase):
 
     class Config:
         from_attributes = True
+
+class CategoryRecurring(BaseModel):
+    category: str
+    monthly_amount: float
+    annual_amount: float
+    percentage: float
+
+class BillRecurringDetail(BaseModel):
+    id: int
+    name: str
+    category: str
+    amount: float
+    frequency: str
+    monthly_equivalent: float
+    annual_equivalent: float
+
+class RecurringSummaryResponse(BaseModel):
+    monthly_recurring: float
+    annual_recurring: float
+    active_bill_count: int
+    income_available: bool
+    monthly_income: Optional[float] = None
+    recurring_expense_ratio: float
+    income_after_recurring_bills: float
+    categories: List[CategoryRecurring]
+    bills: List[BillRecurringDetail]
+
+class UpcomingBillOccurrence(BaseModel):
+    bill_id: int
+    bill_name: str
+    category: str
+    amount: float
+    currency: str
+    due_date: str
+    frequency: str
+    account_id: Optional[int] = None
+    account_name: Optional[str] = None
+    auto_pay: bool
+    days_until_due: int
+    status: str
+
+class NextBillSummary(BaseModel):
+    name: str
+    amount: float
+    due_date: str
+
+class UpcomingBillsSummaryResponse(BaseModel):
+    total_upcoming_amount: float
+    bill_count: int
+    next_bill: Optional[NextBillSummary] = None
+    next_7_days_amount: float
+    next_30_days_amount: float
+    next_90_days_amount: float

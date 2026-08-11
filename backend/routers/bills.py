@@ -5,11 +5,54 @@ from typing import List, Optional
 import models
 import schemas
 from database import get_db
+from datetime import datetime, timezone, date
+from services import recurring_expense_service, upcoming_bills_service
 
 router = APIRouter(
     prefix="/api/bills",
     tags=["Bills"]
 )
+
+@router.get("/upcoming", response_model=List[schemas.UpcomingBillOccurrence])
+def get_upcoming_bills(
+    user_id: int,
+    days: int = Query(30, ge=1, le=365),
+    reference_date: Optional[str] = Query(None, description="ISO Date string. Defaults to today."),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns a list of deterministic upcoming bill occurrences for the user.
+    """
+    bills = db.query(models.Bill).filter(models.Bill.user_id == user_id).all()
+    ref_date = date.fromisoformat(reference_date) if reference_date else datetime.now(timezone.utc).date()
+    return upcoming_bills_service.generate_upcoming_occurrences(bills, ref_date, days)
+
+@router.get("/upcoming-summary", response_model=schemas.UpcomingBillsSummaryResponse)
+def get_upcoming_bills_summary(
+    user_id: int,
+    days: int = Query(30, ge=1, le=365),
+    reference_date: Optional[str] = Query(None, description="ISO Date string. Defaults to today."),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns aggregated metrics for upcoming bills.
+    """
+    bills = db.query(models.Bill).filter(models.Bill.user_id == user_id).all()
+    ref_date = date.fromisoformat(reference_date) if reference_date else datetime.now(timezone.utc).date()
+    return upcoming_bills_service.calculate_upcoming_summary(bills, ref_date, days)
+
+@router.get("/recurring-summary", response_model=schemas.RecurringSummaryResponse)
+def get_recurring_summary(
+    user_id: int, 
+    monthly_income: Optional[float] = Query(None, description="Optional monthly income for ratio calculation"),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns a normalized summary of all active recurring bills for the user.
+    """
+    bills = db.query(models.Bill).filter(models.Bill.user_id == user_id).all()
+    summary = recurring_expense_service.calculate_recurring_summary(bills, monthly_income)
+    return summary
 
 @router.post("/", response_model=schemas.BillOut, status_code=status.HTTP_201_CREATED)
 def create_bill(bill: schemas.BillCreate, db: Session = Depends(get_db)):

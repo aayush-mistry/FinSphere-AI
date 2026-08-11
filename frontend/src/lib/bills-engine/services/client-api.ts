@@ -1,4 +1,4 @@
-import { Bill, CreateBillPayload, UpdateBillPayload, BillStatus } from '../types';
+import { Bill, CreateBillPayload, UpdateBillPayload, BillStatus, RecurringSummaryResponse, UpcomingBillOccurrence, UpcomingBillsSummaryResponse } from '../types';
 
 export const BillsClientAPI = {
   async getBills(userId: number, filters?: { status?: BillStatus, category?: string, frequency?: string }): Promise<Bill[]> {
@@ -61,5 +61,23 @@ export const BillsClientAPI = {
       method: 'DELETE'
     });
     if (!res.ok) throw new Error('Failed to delete bill');
+  },
+
+  async getRecurringExpenseSummary(userId: number): Promise<RecurringSummaryResponse> {
+    const res = await fetch(`/api/bills/recurring-summary?user_id=${userId}`);
+    if (!res.ok) throw new Error('Failed to fetch recurring expense summary');
+    return res.json();
+  },
+
+  async getUpcomingBills(userId: number, days: number = 30): Promise<UpcomingBillOccurrence[]> {
+    const res = await fetch(`http://localhost:8000/api/bills/upcoming?user_id=${userId}&days=${days}`);
+    if (!res.ok) throw new Error('Failed to fetch upcoming bills');
+    return res.json();
+  },
+
+  async getUpcomingBillsSummary(userId: number, days: number = 30): Promise<UpcomingBillsSummaryResponse> {
+    const res = await fetch(`http://localhost:8000/api/bills/upcoming-summary?user_id=${userId}&days=${days}`);
+    if (!res.ok) throw new Error('Failed to fetch upcoming bills summary');
+    return res.json();
   }
 };
