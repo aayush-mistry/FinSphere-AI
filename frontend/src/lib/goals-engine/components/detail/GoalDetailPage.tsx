@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, AlertCircle } from 'lucide-react';
-import { useGoalIntelligence } from '../../hooks/useGoalsEngine';
+import { ArrowLeft, AlertCircle, Edit2, Archive, Loader2 } from 'lucide-react';
+import { useGoalIntelligence, useUpdateGoal, useArchiveGoal } from '../../hooks/useGoalsEngine';
 import { GoalOverview } from './GoalOverview';
 import { TargetInformation } from './TargetInformation';
 import { SavingsPace } from './SavingsPace';
@@ -9,11 +10,18 @@ import { ProjectionChart } from './ProjectionChart';
 import { ContributionHistory } from './ContributionHistory';
 import { FinancialInsight } from './FinancialInsight';
 import { GoalSimulator } from './simulator/GoalSimulator';
+import { GoalFormModal } from '../GoalFormModal';
 import { GoalSimulationOut } from '../../types';
 
 export function GoalDetailPage({ goalId }: { goalId: number }) {
+  const router = useRouter();
   const { data, isLoading, isError } = useGoalIntelligence(goalId);
-  const [simulationData, setSimulationData] = React.useState<GoalSimulationOut | null>(null);
+  const updateGoalMutation = useUpdateGoal();
+  const archiveGoalMutation = useArchiveGoal();
+  
+  const [simulationData, setSimulationData] = useState<GoalSimulationOut | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
 
   if (isLoading) {
     return (
@@ -57,6 +65,29 @@ export function GoalDetailPage({ goalId }: { goalId: number }) {
   if (detail.status === "Completed") statusColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
   else if (detail.status === "On Track") statusColor = "bg-blue-50 text-blue-700 border-blue-200";
   else if (detail.status === "At Risk" || detail.status === "Overdue") statusColor = "bg-rose-50 text-rose-700 border-rose-200";
+  else if (detail.status === "Archived") statusColor = "bg-slate-100 text-slate-500 border-slate-300";
+
+  const handleEditSubmit = (updatedData: any) => {
+    updateGoalMutation.mutate({ goalId, data: updatedData }, {
+      onSuccess: () => {
+        setIsEditModalOpen(false);
+      }
+    });
+  };
+
+  const handleArchive = () => {
+    if (confirm('Are you sure you want to archive this goal?')) {
+      setIsArchiving(true);
+      archiveGoalMutation.mutate(goalId, {
+        onSuccess: () => {
+          router.push('/goals');
+        },
+        onSettled: () => {
+          setIsArchiving(false);
+        }
+      });
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto pb-12">
@@ -71,8 +102,25 @@ export function GoalDetailPage({ goalId }: { goalId: number }) {
             {detail.category} • {detail.priority} Priority
           </p>
         </div>
-        <div className={`px-4 py-1.5 rounded-full border text-sm font-bold tracking-wide uppercase ${statusColor}`}>
-          {detail.status}
+        <div className="flex items-center gap-3">
+          <div className={`px-4 py-1.5 rounded-full border text-sm font-bold tracking-wide uppercase ${statusColor}`}>
+            {detail.status}
+          </div>
+          <button 
+            onClick={() => setIsEditModalOpen(true)}
+            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+            title="Edit Goal"
+          >
+            <Edit2 className="w-5 h-5" />
+          </button>
+          <button 
+            onClick={handleArchive}
+            disabled={isArchiving || detail.status === 'Archived'}
+            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:opacity-50"
+            title="Archive Goal"
+          >
+            {isArchiving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Archive className="w-5 h-5" />}
+          </button>
         </div>
       </div>
 
@@ -126,6 +174,14 @@ export function GoalDetailPage({ goalId }: { goalId: number }) {
       <GoalSimulator 
         goalId={goalId} 
         onSimulationData={setSimulationData} 
+      />
+
+      <GoalFormModal 
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSubmit={handleEditSubmit}
+        initialData={detail}
+        isSubmitting={updateGoalMutation.isPending}
       />
     </div>
   );

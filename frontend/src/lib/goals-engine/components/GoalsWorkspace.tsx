@@ -3,11 +3,13 @@ import { Plus, Target } from 'lucide-react';
 import { GoalSummaryCards } from './GoalSummaryCards';
 import { GoalStatusSummary } from './GoalStatusSummary';
 import { GoalCard } from './GoalCard';
+import { GoalFormModal } from './GoalFormModal';
 import { 
   useGoalsSummary, 
   useGoalPredictionSummary, 
   useGoalComparison, 
-  useGoalsDetailedList 
+  useGoalsDetailedList,
+  useCreateGoal
 } from '../hooks/useGoalsEngine';
 
 export function GoalsWorkspace() {
@@ -16,10 +18,20 @@ export function GoalsWorkspace() {
   const { data: comparisons, isLoading: isLoadingComparison } = useGoalComparison();
   const { data: goals, isLoading: isLoadingGoals, isError: isErrorGoals } = useGoalsDetailedList();
   
+  const createGoalMutation = useCreateGoal();
   const [filter, setFilter] = useState<string>('All');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const isLoading = isLoadingSummary || isLoadingPrediction || isLoadingComparison || isLoadingGoals;
   const isError = isErrorSummary || isErrorGoals;
+
+  const handleCreateGoal = (data: any) => {
+    createGoalMutation.mutate(data, {
+      onSuccess: () => {
+        setIsModalOpen(false);
+      }
+    });
+  };
 
   if (isError) {
     return (
@@ -36,10 +48,16 @@ export function GoalsWorkspace() {
     );
   }
 
+  // Determine if empty. Exclude archived goals from empty state count if 'All' filter doesn't include them? 
+  // Wait, if all goals are archived, maybe we still show them if filter is Archived. 
+  // Let's just use `goals` length.
   const isEmpty = !isLoading && (!goals || goals.length === 0);
 
-  // Filter goals
-  const filteredGoals = goals?.filter(g => filter === 'All' || g.status === filter) || [];
+  // Filter goals. "All" should exclude Archived unless explicitly selected.
+  const filteredGoals = goals?.filter(g => {
+    if (filter === 'All') return g.status !== 'Archived';
+    return g.status === filter;
+  }) || [];
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-12">
@@ -48,7 +66,10 @@ export function GoalsWorkspace() {
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Financial Goals</h1>
           <p className="text-slate-500">Track your progress and understand when you'll reach your goals.</p>
         </div>
-        <button className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-sm whitespace-nowrap">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"
+        >
           <Plus className="w-5 h-5" />
           Create Goal
         </button>
@@ -60,7 +81,7 @@ export function GoalsWorkspace() {
           <GoalStatusSummary summary={predictionSummary} isLoading={isLoading} />
 
           <div className="pt-4 flex gap-2 border-b border-slate-200 overflow-x-auto pb-px">
-            {['All', 'On Track', 'At Risk', 'Overdue', 'Completed'].map(f => (
+            {['All', 'On Track', 'At Risk', 'Overdue', 'Completed', 'Archived'].map(f => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
@@ -110,11 +131,21 @@ export function GoalsWorkspace() {
           <p className="text-slate-500 mb-8 max-w-md mx-auto">
             Create a goal to start tracking your savings progress. You can set targets for emergencies, vacations, or major purchases.
           </p>
-          <button className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-sm">
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-sm"
+          >
             Create Goal
           </button>
         </div>
       )}
+
+      <GoalFormModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreateGoal}
+        isSubmitting={createGoalMutation.isPending}
+      />
     </div>
   );
 }

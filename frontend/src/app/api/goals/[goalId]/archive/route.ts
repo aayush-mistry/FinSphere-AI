@@ -1,0 +1,26 @@
+import { NextResponse } from 'next/server';
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+
+export async function PATCH(request: Request, { params }: { params: Promise<{ goalId: string }> }) {
+  const resolvedParams = await params;
+  const goalId = resolvedParams.goalId;
+  const { searchParams } = new URL(request.url);
+  const userId = searchParams.get('user_id') || '1';
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/goals/${goalId}/archive?user_id=${userId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!res.ok) throw new Error('Failed to archive goal');
+    const data = await res.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error proxying to backend:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}

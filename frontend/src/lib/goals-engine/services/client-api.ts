@@ -53,6 +53,41 @@ export const GoalsClientAPI = {
     });
     if (!res.ok) throw new Error('Failed to simulate goal projection');
     return res.json();
+  },
+
+  async createGoal(userId: number, data: Partial<GoalOut>): Promise<GoalOut> {
+    const res = await fetch(`/api/goals`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ ...data, user_id: userId })
+    });
+    if (!res.ok) throw new Error('Failed to create goal');
+    return res.json();
+  },
+
+  async updateGoal(goalId: number, userId: number, data: Partial<GoalOut>): Promise<GoalOut> {
+    const res = await fetch(`/api/goals/${goalId}?user_id=${userId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error('Failed to update goal');
+    return res.json();
+  },
+
+  async archiveGoal(goalId: number, userId: number): Promise<GoalOut> {
+    const res = await fetch(`/api/goals/${goalId}/archive?user_id=${userId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    if (!res.ok) throw new Error('Failed to archive goal');
+    return res.json();
   }
 };
 

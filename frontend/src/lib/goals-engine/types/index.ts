@@ -1,3 +1,25 @@
+export interface GoalCreate {
+  name: string;
+  category: string;
+  target_amount: number;
+  target_date: string;
+  priority: string;
+  monthly_contribution: number;
+  description?: string;
+  linked_account_id?: string;
+}
+
+export interface GoalUpdate {
+  name?: string;
+  category?: string;
+  target_amount?: number;
+  target_date?: string;
+  priority?: string;
+  monthly_contribution?: number;
+  description?: string;
+  linked_account_id?: string;
+}
+
 export interface GoalPredictionSummaryOut {
   total_goals_analyzed: number;
   goals_on_track: number;

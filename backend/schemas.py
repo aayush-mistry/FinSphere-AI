@@ -25,6 +25,7 @@ class GoalStatus(str, Enum):
     COMPLETED = "Completed"
     PAUSED = "Paused"
     CANCELLED = "Cancelled"
+    ARCHIVED = "Archived"
 
 class GoalBase(BaseModel):
     name: str = Field(..., min_length=1)
@@ -185,3 +186,85 @@ class GoalComparisonItem(BaseModel):
     monthly_projection: float
     projected_completion_date: Optional[datetime] = None
 
+class BillCategory(str, Enum):
+    HOUSING = "Housing"
+    UTILITIES = "Utilities"
+    INTERNET = "Internet"
+    MOBILE = "Mobile"
+    INSURANCE = "Insurance"
+    LOAN = "Loan"
+    CREDIT_CARD = "Credit Card"
+    SUBSCRIPTION = "Subscription"
+    EDUCATION = "Education"
+    HEALTHCARE = "Healthcare"
+    INVESTMENT = "Investment"
+    OTHER = "Other"
+
+class BillFrequency(str, Enum):
+    WEEKLY = "Weekly"
+    MONTHLY = "Monthly"
+    QUARTERLY = "Quarterly"
+    HALF_YEARLY = "Half-Yearly"
+    YEARLY = "Yearly"
+
+class BillStatus(str, Enum):
+    ACTIVE = "Active"
+    PAUSED = "Paused"
+    CANCELLED = "Cancelled"
+    COMPLETED = "Completed"
+
+class BillBase(BaseModel):
+    name: str = Field(..., min_length=1)
+    category: BillCategory
+    amount: float = Field(..., gt=0)
+    currency: str = "INR"
+    frequency: BillFrequency
+    due_day: int = Field(..., ge=1, le=31)
+    start_date: datetime
+    end_date: Optional[datetime] = None
+    account_id: Optional[str] = None
+    status: BillStatus = BillStatus.ACTIVE
+    auto_pay: bool = False
+    notes: Optional[str] = None
+
+    @field_validator("end_date")
+    def validate_end_date(cls, v, info):
+        start_date = info.data.get("start_date")
+        if v and start_date and v < start_date:
+            raise ValueError("End date must be after start date")
+        return v
+
+class BillCreate(BillBase):
+    user_id: int
+
+class BillUpdate(BaseModel):
+    name: Optional[str] = None
+    category: Optional[BillCategory] = None
+    amount: Optional[float] = Field(None, gt=0)
+    frequency: Optional[BillFrequency] = None
+    due_day: Optional[int] = Field(None, ge=1, le=31)
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    account_id: Optional[str] = None
+    status: Optional[BillStatus] = None
+    auto_pay: Optional[bool] = None
+    notes: Optional[str] = None
+
+    @field_validator("end_date")
+    def validate_end_date(cls, v, info):
+        start_date = info.data.get("start_date")
+        if v and start_date and v < start_date:
+            raise ValueError("End date must be after start date")
+        return v
+
+class BillStatusUpdate(BaseModel):
+    status: BillStatus
+
+class BillOut(BillBase):
+    id: int
+    user_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True

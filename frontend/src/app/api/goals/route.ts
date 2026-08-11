@@ -19,3 +19,23 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const res = await fetch(`${BACKEND_URL}/api/goals/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    
+    if (!res.ok) throw new Error('Failed to create goal');
+    const data = await res.json();
+    return NextResponse.json(data, { status: 201 });
+  } catch (error) {
+    console.error('Error proxying to backend:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}

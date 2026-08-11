@@ -39,9 +39,9 @@ def get_goals(user_id: int, db: Session = Depends(get_db)):
 def get_goal_summary(user_id: int, db: Session = Depends(get_db)):
     goals = db.query(models.Goal).filter(models.Goal.user_id == user_id).all()
     
-    total_active_goals = len([g for g in goals if g.status != "Cancelled"])
-    total_target_amount = sum(g.target_amount for g in goals if g.status != "Cancelled")
-    total_current_amount = sum(g.current_amount for g in goals if g.status != "Cancelled")
+    total_active_goals = len([g for g in goals if g.status not in ["Cancelled", "Archived"]])
+    total_target_amount = sum(g.target_amount for g in goals if g.status not in ["Cancelled", "Archived"])
+    total_current_amount = sum(g.current_amount for g in goals if g.status not in ["Cancelled", "Archived"])
     total_remaining = max(total_target_amount - total_current_amount, 0.0)
     
     overall_progress = 0.0
@@ -49,7 +49,7 @@ def get_goal_summary(user_id: int, db: Session = Depends(get_db)):
         overall_progress = (total_current_amount / total_target_amount) * 100
         overall_progress = min(max(overall_progress, 0.0), 100.0)
         
-    planned_monthly_contributions = sum(g.monthly_contribution for g in goals if g.status != "Cancelled")
+    planned_monthly_contributions = sum(g.monthly_contribution for g in goals if g.status not in ["Cancelled", "Archived"])
     
     average_monthly_cashflow = get_average_monthly_cashflow()
     
@@ -59,7 +59,7 @@ def get_goal_summary(user_id: int, db: Session = Depends(get_db)):
     overdue_goals = 0
     
     for g in goals:
-        if g.status == "Cancelled":
+        if g.status in ["Cancelled", "Archived"]:
             continue
         metrics = calculate_goal_metrics(
             target_amount=g.target_amount,
@@ -93,7 +93,7 @@ def get_goal_summary(user_id: int, db: Session = Depends(get_db)):
 
 @router.get("/predictions/summary", response_model=schemas.GoalPredictionSummaryOut)
 def get_goal_predictions_summary(user_id: int, db: Session = Depends(get_db)):
-    goals = db.query(models.Goal).filter(models.Goal.user_id == user_id, models.Goal.status != "Cancelled").all()
+    goals = db.query(models.Goal).filter(models.Goal.user_id == user_id, models.Goal.status.notin_(["Cancelled", "Archived"])).all()
     
     avg_cashflow = get_average_monthly_cashflow()
     
@@ -141,7 +141,7 @@ def get_goal_predictions_summary(user_id: int, db: Session = Depends(get_db)):
 
 @router.get("/predictions/compare", response_model=List[schemas.GoalComparisonItem])
 def get_goal_predictions_compare(user_id: int, db: Session = Depends(get_db)):
-    goals = db.query(models.Goal).filter(models.Goal.user_id == user_id, models.Goal.status != "Cancelled").all()
+    goals = db.query(models.Goal).filter(models.Goal.user_id == user_id, models.Goal.status.notin_(["Cancelled", "Archived"])).all()
     avg_cashflow = get_average_monthly_cashflow()
     
     results = []
@@ -181,6 +181,10 @@ def get_goal(goal_id: int, user_id: int, db: Session = Depends(get_db)):
     avg_cashflow = get_average_monthly_cashflow()
     feasibility = assess_goal_feasibility(metrics["required_monthly_contribution"], avg_cashflow)
     
+    status = metrics["status"]
+    if goal.status in ["Cancelled", "Archived"]:
+        status = goal.status
+        
     # We dump the ORM model to a dict and then merge with our calculated fields
     goal_dict = {
         "id": goal.id,
@@ -192,7 +196,7 @@ def get_goal(goal_id: int, user_id: int, db: Session = Depends(get_db)):
         "current_amount": goal.current_amount,
         "target_date": goal.target_date,
         "priority": goal.priority,
-        "status": metrics["status"],  # Override status with dynamic status
+        "status": status,  # Override status with dynamic status unless archived/cancelled
         "linked_account_id": goal.linked_account_id,
         "monthly_contribution": goal.monthly_contribution,
         "created_at": goal.created_at,
@@ -220,6 +224,19 @@ def update_goal(goal_id: int, user_id: int, goal_update: schemas.GoalUpdate, db:
     for key, value in update_data.items():
         setattr(db_goal, key, value)
         
+    db.commit()
+    db.refresh(db_goal)
+    return db_goal
+
+@router.patch("/{goal_id}/archive", response_model=schemas.GoalOut)
+def archive_goal(goal_id: int, user_id: int, db: Session = Depends(get_db)):
+    db_goal = db.query(models.Goal).filter(models.Goal.id == goal_id).first()
+    if not db_goal:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    if db_goal.user_id != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this goal")
+        
+    db_goal.status = "Archived"
     db.commit()
     db.refresh(db_goal)
     return db_goal
