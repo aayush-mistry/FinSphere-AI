@@ -9,6 +9,7 @@ import { CashFlowReconciliation } from '@/lib/cashflow-engine/components/CashFlo
 import { CashFlowComparison } from '@/lib/cashflow-engine/components/CashFlowComparison';
 import { CashFlowInsightsCard } from '@/lib/cashflow-engine/components/CashFlowInsightsCard';
 import { RecentCashMovements } from '@/lib/cashflow-engine/components/RecentCashMovements';
+import { FinancialOutlook } from '@/lib/cashflow-engine/components/FinancialOutlook';
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,13 @@ function CashFlowWorkspace() {
         period={period} 
         setPeriod={setPeriod} 
       />
+
+      {/* Phase 6.4B: Financial Outlook */}
+      <FinancialOutlook userId={1} />
+
+      <div className="pt-8 border-t border-slate-200">
+        <h3 className="text-xl font-bold text-slate-800 mb-6">Historical Cash Flow Analysis</h3>
+      </div>
 
       {/* Primary KPI Summary */}
       <CashFlowSummaryCards 

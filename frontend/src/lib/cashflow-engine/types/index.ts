@@ -132,3 +132,34 @@ export interface NegativeCashFlowAnalysis {
 export interface CashFlowInsights {
   insights: string[];
 }
+
+export interface CashFlowEvent {
+  date: string;
+  type: 'BILL' | 'INCOME' | 'EXPENSE';
+  description: string;
+  amount: number;
+}
+
+export interface CashFlowTimelinePoint {
+  date: string;
+  balance: number;
+  events: CashFlowEvent[];
+}
+
+export interface CashFlowProjection {
+  reference_date: string;
+  horizon_days: number;
+  starting_cash: number;
+  projected_income: number;
+  projected_expenses: number;
+  projected_bills: number;
+  ending_cash: number;
+  minimum_projected_cash: number;
+  minimum_cash_date: string | null;
+  cash_shortfall: boolean;
+  shortfall_amount?: number;
+  shortfall_date?: string;
+  income_projection_available: boolean;
+  events: CashFlowEvent[];
+  timeline: CashFlowTimelinePoint[];
+}

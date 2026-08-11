@@ -4,8 +4,9 @@ import {
   CashFlowRecent,
   CashFlowReconciliation,
   CashFlowAllocation,
+  CashFlowInsights,
   CashFlowComparison,
-  CashFlowInsights
+  CashFlowProjection
 } from '../types';
 
 export const CashFlowClientAPI = {
@@ -83,6 +84,12 @@ export const CashFlowClientAPI = {
     if (params.account) query.set('account', params.account);
     const res = await fetch(`/api/cashflow/recent?${query.toString()}`);
     if (!res.ok) throw new Error('Failed to fetch recent cash movements');
+    return res.json();
+  },
+
+  async getCashFlowProjection(userId: number, days: number = 30): Promise<CashFlowProjection> {
+    const res = await fetch(`/api/cashflow/projection?user_id=${userId}&days=${days}`);
+    if (!res.ok) throw new Error('Failed to fetch cash flow projection');
     return res.json();
   }
 };
