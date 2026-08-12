@@ -124,7 +124,7 @@ export function FinancialOutlook({ userId }: { userId: number }) {
           <p className="text-slate-500 text-sm mt-1">Cash flow projection based on your historical behavior and future obligations.</p>
         </div>
         <div className="w-full sm:w-auto">
-          <Select value={horizon.toString()} onValueChange={(v) => setHorizon(parseInt(v))}>
+          <Select value={horizon.toString()} onValueChange={(v) => setHorizon(parseInt(v || '30'))}>
             <SelectTrigger className="w-[180px] bg-white border-slate-200">
               <SelectValue placeholder="Select Horizon" />
             </SelectTrigger>

@@ -1,5 +1,5 @@
 import { calculateCashFlowProjection } from '../projection';
-import { UpcomingBillOccurrence } from '../../../../bills-engine/types';
+import { UpcomingBillOccurrence } from '../../../bills-engine/types';
 
 describe('calculateCashFlowProjection', () => {
   const refDate = '2026-08-11';

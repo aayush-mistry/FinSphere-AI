@@ -116,7 +116,7 @@ export function RecurringExpenseSummary({ userId }: { userId: number }) {
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(value: number) => isPrivacyMode ? '••••' : formatCurrency(value)}
+                    formatter={(value: any) => isPrivacyMode ? '••••' : formatCurrency(value)}
                   />
                   <Legend />
                 </PieChart>

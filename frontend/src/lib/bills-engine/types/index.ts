@@ -132,3 +132,54 @@ export interface UpcomingBillsSummaryResponse {
   next_30_days_amount: number;
   next_90_days_amount: number;
 }
+
+export type BillReconciliationStatus = 
+  | "UPCOMING"
+  | "DUE"
+  | "PAID"
+  | "PAID_LATE"
+  | "PARTIALLY_PAID"
+  | "OVERPAID"
+  | "UNPAID"
+  | "OVERDUE";
+
+export interface BillReconciliationResult {
+  bill_id: number;
+  bill_name: string;
+  occurrence_date: string;
+  expected_amount: number;
+  status: BillReconciliationStatus;
+  paid_amount: number;
+  remaining_amount: number;
+  overpayment_amount: number;
+  payment_count: number;
+  first_payment_date: string | null;
+  final_payment_date: string | null;
+  days_late: number;
+  days_overdue: number;
+  matched_transaction_ids: string[];
+  match_confidence: number;
+  reconciliation_reason: string;
+}
+
+export interface ReconciliationSummary {
+  total_bills: number;
+  paid: number;
+  paid_late: number;
+  partially_paid: number;
+  overpaid: number;
+  unpaid: number;
+  overdue: number;
+  total_expected: number;
+  total_paid: number;
+  total_remaining: number;
+}
+
+export interface BillReconciliationResponse {
+  user_id: number;
+  start_date: string;
+  end_date: string;
+  occurrences: UpcomingBillOccurrence[];
+  results: BillReconciliationResult[];
+  summary: ReconciliationSummary;
+}

@@ -1,4 +1,4 @@
-import { Bill, CreateBillPayload, UpdateBillPayload, BillStatus, RecurringSummaryResponse, UpcomingBillOccurrence, UpcomingBillsSummaryResponse } from '../types';
+import { Bill, CreateBillPayload, UpdateBillPayload, BillStatus, RecurringSummaryResponse, UpcomingBillOccurrence, UpcomingBillsSummaryResponse, BillReconciliationResponse, BillReconciliationStatus } from '../types';
 
 export const BillsClientAPI = {
   async getBills(userId: number, filters?: { status?: BillStatus, category?: string, frequency?: string }): Promise<Bill[]> {
@@ -78,6 +78,22 @@ export const BillsClientAPI = {
   async getUpcomingBillsSummary(userId: number, days: number = 30): Promise<UpcomingBillsSummaryResponse> {
     const res = await fetch(`http://localhost:8000/api/bills/upcoming-summary?user_id=${userId}&days=${days}`);
     if (!res.ok) throw new Error('Failed to fetch upcoming bills summary');
+    return res.json();
+  },
+
+  async getBillReconciliation(userId: number, startDate: string, endDate: string, statusFilter?: BillReconciliationStatus | 'ALL'): Promise<BillReconciliationResponse> {
+    const params = new URLSearchParams({
+      user_id: userId.toString(),
+      start_date: startDate,
+      end_date: endDate
+    });
+    
+    if (statusFilter && statusFilter !== 'ALL') {
+      params.append('status', statusFilter);
+    }
+
+    const res = await fetch(`http://localhost:8000/api/bills/reconciliation?${params.toString()}`);
+    if (!res.ok) throw new Error('Failed to fetch bill reconciliation data');
     return res.json();
   }
 };
