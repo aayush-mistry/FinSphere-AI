@@ -8,8 +8,8 @@ def test_exact_match():
     
     matches = match_occurrences_to_transactions(occurrences, transactions)
     assert matches[0].matched is True
-    assert matches[0].transaction_id == "t1"
-    assert "Exact amount" in matches[0].match_reasons
+    assert matches[0].matched_transactions[0].transaction_id == "t1"
+    assert "Exact amount" in matches[0].matched_transactions[0].match_reasons
 
 def test_date_tolerance():
     # 2. Date tolerance (Aug 18, 3 days late)
@@ -18,7 +18,7 @@ def test_date_tolerance():
     
     matches = match_occurrences_to_transactions(occurrences, transactions)
     assert matches[0].matched is True
-    assert matches[0].transaction_id == "t2"
+    assert matches[0].matched_transactions[0].transaction_id == "t2"
 
 def test_outside_date_window():
     # 3. Outside date window (Aug 25, 10 days late > 7 days)
@@ -37,7 +37,7 @@ def test_exact_amount_priority():
     ]
     
     matches = match_occurrences_to_transactions(occurrences, transactions)
-    assert matches[0].transaction_id == "t4b"
+    assert matches[0].matched_transactions[0].transaction_id == "t4b"
 
 def test_category_match():
     # 5. Category match
@@ -48,7 +48,7 @@ def test_category_match():
     ]
     
     matches = match_occurrences_to_transactions(occurrences, transactions)
-    assert matches[0].transaction_id == "t5b"
+    assert matches[0].matched_transactions[0].transaction_id == "t5b"
 
 def test_merchant_match():
     # 6. Merchant match
@@ -59,7 +59,7 @@ def test_merchant_match():
     ]
     
     matches = match_occurrences_to_transactions(occurrences, transactions)
-    assert matches[0].transaction_id == "t6b"
+    assert matches[0].matched_transactions[0].transaction_id == "t6b"
 
 def test_account_match():
     # 7. Account match
@@ -70,7 +70,7 @@ def test_account_match():
     ]
     
     matches = match_occurrences_to_transactions(occurrences, transactions)
-    assert matches[0].transaction_id == "t7b"
+    assert matches[0].matched_transactions[0].transaction_id == "t7b"
 
 def test_wrong_direction():
     # 8. Wrong direction (Income transaction)
@@ -134,7 +134,7 @@ def test_partial_amount_within_tolerance():
     transactions = [{"id": "t14", "date": "2026-08-15", "amount": -990}] # 1% paid
     matches = match_occurrences_to_transactions(occurrences, transactions)
     assert matches[0].matched is True
-    assert matches[0].amount_difference == -10 # Expected 1000, Actual 990, Diff = -10
+    assert matches[0].matched_transactions[0].actual_amount - matches[0].expected_amount == -10 # Expected 1000, Actual 990, Diff = -10
     
 def test_overpayment():
     # 14. Overpayment metadata
@@ -142,7 +142,7 @@ def test_overpayment():
     transactions = [{"id": "t15", "date": "2026-08-15", "amount": -1020}] # 2% overpaid
     matches = match_occurrences_to_transactions(occurrences, transactions)
     assert matches[0].matched is True
-    assert matches[0].amount_difference == +20
+    assert matches[0].matched_transactions[0].actual_amount - matches[0].expected_amount == +20
 
 def test_deterministic_tie_breaking():
     # 15. Deterministic tie breaking
@@ -154,4 +154,4 @@ def test_deterministic_tie_breaking():
     # They have identical scores, dates, and amounts. 
     # The tie breaker is alphanumeric ID sort ascending. 't16a' comes before 't16b'.
     matches = match_occurrences_to_transactions(occurrences, transactions)
-    assert matches[0].transaction_id == "t16a"
+    assert matches[0].matched_transactions[0].transaction_id == "t16a"

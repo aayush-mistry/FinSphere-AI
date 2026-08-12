@@ -28,11 +28,11 @@ def normalize_text(text: str) -> str:
         return ""
     return text.lower().strip()
 
-def score_candidate(occurrence: Dict, transaction: Dict) -> Dict:
+def score_candidate(occurrence: Dict, transaction: Dict, target_amount: Optional[float] = None) -> Dict:
     score = 0
     reasons = []
 
-    expected_amount = occurrence["amount"]
+    expected_amount = target_amount if target_amount is not None else occurrence["amount"]
     # We expect actual_amount to be negative (outflow). We'll compare absolute values.
     actual_amount = abs(transaction["amount"])
     amount_diff = actual_amount - expected_amount
@@ -99,8 +99,6 @@ def score_candidate(occurrence: Dict, transaction: Dict) -> Dict:
 
 def is_eligible_transaction(transaction: Dict) -> bool:
     # 1. Direction: Must be an outflow (negative amount)
-    # The frontend mockTransactions uses positive amounts for income, negative for expense typically,
-    # or specifies a type. Let's assume bills are outflows, meaning amount < 0.
     amount = transaction.get("amount", 0)
     if amount >= 0:
         return False
@@ -119,6 +117,8 @@ def is_eligible_transaction(transaction: Dict) -> bool:
 
     return True
 
+from schemas import MatchedTransactionDetail
+
 def match_occurrences_to_transactions(occurrences: List[Dict], transactions: List[Dict]) -> List[BillMatchResult]:
     assigned_transactions = set()
     results = []
@@ -128,122 +128,93 @@ def match_occurrences_to_transactions(occurrences: List[Dict], transactions: Lis
 
     for occ in occurrences:
         due_date = datetime.datetime.strptime(occ["due_date"], "%Y-%m-%d").date()
-        best_candidate = None
-        best_score_data = None
-        best_txn = None
+        expected_amount = occ["amount"]
         
-        for txn in transactions:
-            txn_id = txn["id"]
-            if txn_id in assigned_transactions:
-                continue
+        matched_txns = []
+        total_matched_amount = 0.0
+        
+        while True:
+            remaining_expected = max(0.0, expected_amount - total_matched_amount)
+            # Break if we've satisfied the expected amount within tolerance
+            if total_matched_amount > 0 and remaining_expected <= expected_amount * AMOUNT_TOLERANCE_PCT:
+                break
                 
-            if not is_eligible_transaction(txn):
-                continue
+            best_candidate = None
+            best_txn = None
+            
+            for txn in transactions:
+                txn_id = txn["id"]
+                if txn_id in assigned_transactions:
+                    continue
+                    
+                if not is_eligible_transaction(txn):
+                    continue
+                    
+                txn_date_str = txn["date"]
+                if "T" in txn_date_str:
+                    txn_date_str = txn_date_str.split("T")[0]
+                txn_date = datetime.datetime.strptime(txn_date_str, "%Y-%m-%d").date()
                 
-            txn_date_str = txn["date"]
-            if "T" in txn_date_str:
-                txn_date_str = txn_date_str.split("T")[0]
-            txn_date = datetime.datetime.strptime(txn_date_str, "%Y-%m-%d").date()
-            
-            days_diff = (txn_date - due_date).days
-            
-            # Check matching window (e.g. -3 to +7 days)
-            if not (-MATCH_WINDOW_BEFORE <= days_diff <= MATCH_WINDOW_AFTER):
-                continue
+                days_diff = (txn_date - due_date).days
                 
-            score_data = score_candidate(occ, txn)
-            
-            if score_data["score"] >= MATCH_THRESHOLD:
-                if not best_candidate:
-                    best_candidate = score_data
-                    best_txn = txn
-                else:
-                    # Tie breakers
-                    # 1. Score
-                    if score_data["score"] > best_candidate["score"]:
+                if not (-MATCH_WINDOW_BEFORE <= days_diff <= MATCH_WINDOW_AFTER):
+                    continue
+                    
+                score_data = score_candidate(occ, txn, target_amount=remaining_expected)
+                
+                if score_data["score"] >= MATCH_THRESHOLD:
+                    if not best_candidate:
                         best_candidate = score_data
                         best_txn = txn
-                    elif score_data["score"] == best_candidate["score"]:
-                        # 2. Date diff
-                        if score_data["abs_days_diff"] < best_candidate["abs_days_diff"]:
+                    else:
+                        # Tie breakers
+                        if score_data["score"] > best_candidate["score"]:
                             best_candidate = score_data
                             best_txn = txn
-                        elif score_data["abs_days_diff"] == best_candidate["abs_days_diff"]:
-                            # 3. Amount diff
-                            if abs(score_data["amount_diff"]) < abs(best_candidate["amount_diff"]):
+                        elif score_data["score"] == best_candidate["score"]:
+                            if score_data["abs_days_diff"] < best_candidate["abs_days_diff"]:
                                 best_candidate = score_data
                                 best_txn = txn
-                            elif abs(score_data["amount_diff"]) == abs(best_candidate["amount_diff"]):
-                                # 4. Deterministic ID sort
-                                if str(txn_id) < str(best_txn["id"]):
+                            elif score_data["abs_days_diff"] == best_candidate["abs_days_diff"]:
+                                if abs(score_data["amount_diff"]) < abs(best_candidate["amount_diff"]):
                                     best_candidate = score_data
                                     best_txn = txn
+                                elif abs(score_data["amount_diff"]) == abs(best_candidate["amount_diff"]):
+                                    if str(txn_id) < str(best_txn["id"]):
+                                        best_candidate = score_data
+                                        best_txn = txn
 
-        if best_candidate and best_txn:
-            assigned_transactions.add(best_txn["id"])
+            if best_candidate and best_txn:
+                assigned_transactions.add(best_txn["id"])
+                total_matched_amount += best_candidate["actual_amount"]
+                matched_txns.append(MatchedTransactionDetail(
+                    transaction_id=str(best_txn["id"]),
+                    transaction_date=best_candidate["transaction_date"],
+                    actual_amount=best_candidate["actual_amount"],
+                    days_difference=best_candidate["days_diff"],
+                    score=best_candidate["score"],
+                    match_reasons=best_candidate["reasons"]
+                ))
+            else:
+                break
+                
+        if len(matched_txns) > 0:
             results.append(BillMatchResult(
                 bill_id=occ["bill_id"],
                 occurrence_date=occ["due_date"],
                 expected_amount=occ["amount"],
-                transaction_id=str(best_txn["id"]),
-                transaction_date=best_candidate["transaction_date"],
-                actual_amount=best_candidate["actual_amount"],
-                amount_difference=best_candidate["amount_diff"],
-                days_difference=best_candidate["days_diff"],
-                score=best_candidate["score"],
+                matched_transactions=matched_txns,
                 matched=True,
-                match_reasons=best_candidate["reasons"]
+                total_matched_amount=total_matched_amount
             ))
         else:
             results.append(BillMatchResult(
                 bill_id=occ["bill_id"],
                 occurrence_date=occ["due_date"],
                 expected_amount=occ["amount"],
-                transaction_id=None,
-                transaction_date=None,
-                actual_amount=None,
-                amount_difference=None,
-                days_difference=None,
-                score=0,
+                matched_transactions=[],
                 matched=False,
-                match_reasons=[]
+                total_matched_amount=0.0
             ))
             
     return results
-
-def reconcile_bills(user_id: int, start_date: str, end_date: str, db: Session) -> BillReconciliationResponse:
-    # 1. Fetch occurrences. We can use the upcoming bills service by faking the reference_date.
-    # calculate_upcoming_occurrences typically looks forward from reference_date. 
-    # To get a range, we can pass start_date as reference_date, and horizon as (end_date - start_date).days
-    sd = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-    ed = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-    days = (ed - sd).days
-    
-    # We will get occurrences for the historical period
-    # Need to fetch bills first
-    from models import Bill
-    bills = db.query(Bill).filter(Bill.user_id == user_id).all()
-    occurrences = generate_upcoming_occurrences(bills, sd.date(), days)
-    # The return type is a list of UpcomingBillOccurrence schemas
-    occ_dicts = [o.dict() for o in occurrences]
-    
-    # Filter out occurrences strictly before start_date just in case, though they shouldn't exist
-    
-    # 2. Fetch transactions
-    transactions = get_user_transactions(user_id)
-    # The frontend mock is global. The backend handles filtering by user if supported.
-    
-    # 3. Match
-    matches = match_occurrences_to_transactions(occ_dicts, transactions)
-    
-    matched_count = sum(1 for m in matches if m.matched)
-    
-    return BillReconciliationResponse(
-        user_id=user_id,
-        start_date=start_date,
-        end_date=end_date,
-        total_occurrences=len(matches),
-        matched_occurrences=matched_count,
-        unmatched_occurrences=len(matches) - matched_count,
-        matches=matches
-    )

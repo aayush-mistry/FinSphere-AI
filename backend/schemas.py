@@ -322,24 +322,66 @@ class UpcomingBillsSummaryResponse(BaseModel):
     next_30_days_amount: float
     next_90_days_amount: float
 
+class MatchedTransactionDetail(BaseModel):
+    transaction_id: str
+    transaction_date: str
+    actual_amount: float
+    days_difference: int
+    score: int
+    match_reasons: List[str]
+
 class BillMatchResult(BaseModel):
     bill_id: int
     occurrence_date: str
     expected_amount: float
-    transaction_id: Optional[str]
-    transaction_date: Optional[str]
-    actual_amount: Optional[float]
-    amount_difference: Optional[float]
-    days_difference: Optional[int]
-    score: int
+    matched_transactions: List[MatchedTransactionDetail]
     matched: bool
-    match_reasons: List[str]
+    total_matched_amount: float
+
+class BillReconciliationStatus(str, Enum):
+    UPCOMING = "UPCOMING"
+    DUE = "DUE"
+    PAID = "PAID"
+    PAID_LATE = "PAID_LATE"
+    PARTIALLY_PAID = "PARTIALLY_PAID"
+    OVERPAID = "OVERPAID"
+    UNPAID = "UNPAID"
+    OVERDUE = "OVERDUE"
+
+class BillReconciliationResult(BaseModel):
+    bill_id: int
+    bill_name: str
+    occurrence_date: str
+    expected_amount: float
+    status: BillReconciliationStatus
+    paid_amount: float
+    remaining_amount: float
+    overpayment_amount: float
+    payment_count: int
+    first_payment_date: Optional[str] = None
+    final_payment_date: Optional[str] = None
+    days_late: int
+    days_overdue: int
+    matched_transaction_ids: List[str]
+    match_confidence: float
+    reconciliation_reason: str
+
+class ReconciliationSummary(BaseModel):
+    total_bills: int
+    paid: int
+    paid_late: int
+    partially_paid: int
+    overpaid: int
+    unpaid: int
+    overdue: int
+    total_expected: float
+    total_paid: float
+    total_remaining: float
 
 class BillReconciliationResponse(BaseModel):
     user_id: int
     start_date: str
     end_date: str
-    total_occurrences: int
-    matched_occurrences: int
-    unmatched_occurrences: int
-    matches: List[BillMatchResult]
+    occurrences: List[UpcomingBillOccurrence]
+    results: List[BillReconciliationResult]
+    summary: ReconciliationSummary

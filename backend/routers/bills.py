@@ -136,14 +136,17 @@ def delete_bill(bill_id: int, user_id: int, db: Session = Depends(get_db)):
     db.commit()
     return None
 
+from services import reconciliation_service
+
 @router.get("/reconciliation", response_model=schemas.BillReconciliationResponse)
 def get_bill_reconciliation(
     user_id: int = Query(..., description="The user ID to fetch bills for"),
     start_date: str = Query(..., description="Start date for reconciliation YYYY-MM-DD"),
     end_date: str = Query(..., description="End date for reconciliation YYYY-MM-DD"),
+    status_filter: Optional[schemas.BillReconciliationStatus] = Query(None, alias="status", description="Filter by reconciliation status"),
     db: Session = Depends(get_db)
 ):
     """
-    Deterministically matches actual historical transactions against expected bill occurrences.
+    Deterministically matches actual historical transactions against expected bill occurrences and evaluates reconciliation status.
     """
-    return bill_matching_service.reconcile_bills(user_id, start_date, end_date, db)
+    return reconciliation_service.get_reconciliation_report(user_id, start_date, end_date, db, status_filter.value if status_filter else None)
