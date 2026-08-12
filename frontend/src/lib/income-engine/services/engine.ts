@@ -4,7 +4,7 @@ import { detectRecurringIncome, analyzeRecurringIncome } from '../calculators/re
 import { calculateIncomeSummary } from '../calculators/summary';
 import { calculateIncomeSources } from '../calculators/sources';
 import { calculateIncomeTrends } from '../calculators/trends';
-import { calculateIncomeStability } from '../calculators/stability';
+
 import { detectIncomeAnomalies } from '../calculators/anomalies';
 import { calculateIncomeForecast } from '../calculators/forecast';
 import { 
@@ -14,7 +14,7 @@ import {
   IncomeSummary,
   IncomeTrend,
   RecurringIncomeDetail,
-  IncomeStabilityMetrics,
+
   IncomeAnomaly,
   IncomeForecast
 } from '../types';
@@ -111,10 +111,7 @@ export class IncomeEngineAPI {
     return analyzeRecurringIncome(all);
   }
 
-  static async getStability(startDate?: string, endDate?: string): Promise<IncomeStabilityMetrics> {
-    const all = await this.getIncomeTransactions(startDate, endDate);
-    return calculateIncomeStability(all);
-  }
+
 
   static async getAnomalies(recentStartDate: string, recentEndDate: string, historicalStartDate: string, historicalEndDate: string): Promise<IncomeAnomaly[]> {
     const recent = await this.getIncomeTransactions(recentStartDate, recentEndDate);

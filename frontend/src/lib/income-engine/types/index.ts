@@ -89,15 +89,7 @@ export interface RecurringIncomeDetail {
   historicalOccurrences: number;
 }
 
-export interface IncomeStabilityMetrics {
-  recurringAmount: number;
-  variableAmount: number;
-  recurringRatio: number; // 0 to 1
-  variableRatio: number; // 0 to 1
-  incomeVariance: number;
-  incomeConsistency: number; // 0 to 1
-  numberOfSources: number;
-}
+
 
 export interface IncomeAnomaly {
   transaction: IncomeTransaction;

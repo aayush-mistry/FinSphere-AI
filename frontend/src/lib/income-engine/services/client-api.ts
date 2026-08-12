@@ -4,7 +4,7 @@ import {
   IncomeTypeSummary,
   IncomeTrend,
   RecurringIncomeDetail,
-  IncomeStabilityMetrics,
+
   IncomeAnomaly,
   IncomeForecast,
   IncomeTransaction
@@ -64,15 +64,7 @@ export const IncomeClientAPI = {
     return res.json();
   },
 
-  async getStability(params: {
-    startDate?: string;
-    endDate?: string;
-  }): Promise<IncomeStabilityMetrics> {
-    const query = new URLSearchParams(params as Record<string, string>).toString();
-    const res = await fetch(`/api/income/stability?${query}`);
-    if (!res.ok) throw new Error('Failed to fetch income stability');
-    return res.json();
-  },
+
 
   async getAnomalies(params: {
     recentStartDate: string;

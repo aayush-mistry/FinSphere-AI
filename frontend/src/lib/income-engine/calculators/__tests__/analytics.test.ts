@@ -1,6 +1,6 @@
 import { TransactionType, TransactionStatus } from '../../../balance-engine/types';
 import { classifyIncome } from '../classifier';
-import { calculateIncomeStability } from '../stability';
+
 import { detectIncomeAnomalies } from '../anomalies';
 import { calculateIncomeForecast } from '../forecast';
 import { IncomeTransaction } from '../../types';
@@ -26,38 +26,7 @@ describe('Income Engine Analytics', () => {
     };
   };
 
-  describe('stability.ts', () => {
-    it('calculates perfect stability for a single recurring source', () => {
-      const transactions = [
-        getTxn('1', '2026-05-01T10:00:00Z', 80000, 'ABC Corp', TransactionType.SALARY),
-        getTxn('2', '2026-06-01T10:00:00Z', 80000, 'ABC Corp', TransactionType.SALARY),
-        getTxn('3', '2026-07-01T10:00:00Z', 80000, 'ABC Corp', TransactionType.SALARY),
-      ];
 
-      const metrics = calculateIncomeStability(transactions);
-      expect(metrics.recurringRatio).toBe(1);
-      expect(metrics.variableRatio).toBe(0);
-      expect(metrics.incomeConsistency).toBeCloseTo(1, 4); // CV = 0, Consistency = 1
-    });
-
-    it('calculates mixed stability', () => {
-      const transactions = [
-        getTxn('1', '2026-05-01T10:00:00Z', 80000, 'ABC Corp', TransactionType.SALARY),
-        getTxn('2', '2026-06-01T10:00:00Z', 80000, 'ABC Corp', TransactionType.SALARY),
-        getTxn('3', '2026-07-01T10:00:00Z', 80000, 'ABC Corp', TransactionType.SALARY),
-        // Variable income
-        getTxn('4', '2026-05-15T10:00:00Z', 20000, 'Upwork', TransactionType.INCOME),
-        getTxn('5', '2026-07-20T10:00:00Z', 40000, 'Upwork', TransactionType.INCOME),
-      ];
-
-      const metrics = calculateIncomeStability(transactions);
-      expect(metrics.recurringAmount).toBe(240000);
-      expect(metrics.variableAmount).toBe(60000);
-      expect(metrics.recurringRatio).toBe(0.8);
-      expect(metrics.variableRatio).toBe(0.2);
-      expect(metrics.incomeConsistency).toBeLessThan(1); // Some variance introduced by Upwork
-    });
-  });
 
   describe('anomalies.ts', () => {
     const historical = [

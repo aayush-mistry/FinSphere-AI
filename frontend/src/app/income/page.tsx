@@ -6,7 +6,6 @@ import { IncomeTrendChart } from '@/lib/income-engine/components/IncomeTrendChar
 import { IncomeSources } from '@/lib/income-engine/components/IncomeSources';
 import { IncomeTypeBreakdown } from '@/lib/income-engine/components/IncomeTypeBreakdown';
 import { RecurringIncome } from '@/lib/income-engine/components/RecurringIncome';
-import { IncomeStability } from '@/lib/income-engine/components/IncomeStability';
 import { IncomeAnomalies } from '@/lib/income-engine/components/IncomeAnomalies';
 import { IncomeForecast } from '@/lib/income-engine/components/IncomeForecast';
 import { RecentIncomeTable } from '@/lib/income-engine/components/RecentIncomeTable';
@@ -79,13 +78,9 @@ function IncomeWorkspace() {
         />
       </div>
 
-      {/* Stability and Recurring */}
-      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+      {/* Recurring */}
+      <div className="grid gap-4 grid-cols-1">
         <RecurringIncome />
-        <IncomeStability 
-          startDate={dates.historicalStartDate}
-          endDate={dates.currentMonthEnd}
-        />
       </div>
 
       {/* Anomalies and Forecast */}

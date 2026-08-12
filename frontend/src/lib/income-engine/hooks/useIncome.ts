@@ -52,12 +52,6 @@ export function useRecurringIncome() {
   });
 }
 
-export function useIncomeStability(params: { startDate?: string; endDate?: string }) {
-  return useQuery({
-    queryKey: ['income', 'stability', params],
-    queryFn: () => IncomeClientAPI.getStability(params)
-  });
-}
 
 export function useIncomeAnomalies(params: {
   recentStartDate: string;
