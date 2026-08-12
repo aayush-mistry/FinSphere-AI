@@ -97,6 +97,8 @@ export function CashFlowTrendChart({ period, startDate, endDate }: CashFlowTrend
                 strokeWidth={3}
                 fillOpacity={1} 
                 fill="url(#colorNet)" 
+                dot={{ r: 4, fill: '#4f46e5', stroke: '#fff', strokeWidth: 2 }}
+                activeDot={{ r: 6, fill: '#4f46e5', stroke: '#fff', strokeWidth: 2 }}
               />
             </ComposedChart>
           </ResponsiveContainer>

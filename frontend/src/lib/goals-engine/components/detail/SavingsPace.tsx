@@ -26,7 +26,7 @@ export function SavingsPace({ required, planned }: SavingsPaceProps) {
     <div className="mb-8">
       <h3 className="text-lg font-bold text-slate-900 mb-4">Savings Pace</h3>
       <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="flex flex-wrap gap-x-8 gap-y-6 md:gap-x-12">
           <div>
             <p className="text-sm font-semibold text-slate-500 mb-1">Required</p>
             <p className="text-xl font-bold text-slate-900">

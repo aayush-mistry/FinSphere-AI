@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CashFlowClientAPI } from "../services/client-api";
+import { useState } from "react";
+import { useCashFlowProjection } from "../hooks/useCashFlow";
 import { CashFlowProjection, CashFlowEvent } from "../types";
 import { PrivacyMask, usePrivacyMode } from "@/lib/privacy";
 import { formatCurrency } from "@/lib/format";
@@ -27,39 +27,17 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function FinancialOutlook({ userId }: { userId: number }) {
   const { isPrivacyMode } = usePrivacyMode();
-  const [data, setData] = useState<CashFlowProjection | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [horizon, setHorizon] = useState<number>(30); // 7, 30, 60, 90
-
-  useEffect(() => {
-    let mounted = true;
-    setLoading(true);
-    setError(null);
-    CashFlowClientAPI.getCashFlowProjection(userId, horizon)
-      .then(res => {
-        if (mounted) {
-          setData(res);
-          setLoading(false);
-        }
-      })
-      .catch(err => {
-        if (mounted) {
-          setError(err.message || 'Failed to fetch projection.');
-          setLoading(false);
-        }
-      });
-    return () => { mounted = false; };
-  }, [userId, horizon]);
+  const { data, isLoading: loading, error, refetch } = useCashFlowProjection(userId, horizon);
 
   if (error) {
     return (
       <div className="p-8 text-center text-rose-500 bg-rose-50 rounded-xl border border-rose-100 flex flex-col items-center justify-center">
         <AlertTriangle className="w-8 h-8 mb-3 opacity-80" />
         <h3 className="font-semibold text-rose-900 mb-1">Financial outlook unavailable</h3>
-        <p className="text-sm text-rose-700 opacity-90">{error}</p>
+        <p className="text-sm text-rose-700 opacity-90">{(error as Error).message || 'Failed to fetch projection.'}</p>
         <button 
-          onClick={() => setHorizon(prev => prev)} // trigger re-render
+          onClick={() => refetch()} 
           className="mt-4 px-4 py-2 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
         >
           <RefreshCw className="w-4 h-4" /> Retry

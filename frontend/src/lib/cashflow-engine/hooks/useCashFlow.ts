@@ -49,3 +49,10 @@ export function useRecentCashFlow(params: { limit?: number; account?: string } =
     queryFn: () => CashFlowClientAPI.getRecent(params)
   });
 }
+
+export function useCashFlowProjection(userId: number, horizon: number) {
+  return useQuery({
+    queryKey: ['cashflow', 'projection', userId, horizon],
+    queryFn: () => CashFlowClientAPI.getCashFlowProjection(userId, horizon)
+  });
+}
