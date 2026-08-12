@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional, List
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 class GoalCategory(str, Enum):
     EMERGENCY_FUND = "Emergency Fund"
@@ -72,8 +72,7 @@ class GoalOut(GoalBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class GoalDetailOut(GoalOut):
     progress: float
@@ -113,8 +112,7 @@ class GoalContributionOut(GoalContributionBase):
     contribution_date: datetime
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class MonthlyProjectionPoint(BaseModel):
     month_index: int
@@ -266,8 +264,7 @@ class BillOut(BillBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class CategoryRecurring(BaseModel):
     category: str

@@ -1,6 +1,9 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import declarative_base, relationship
-from datetime import datetime
+from datetime import datetime, timezone
+
+def utc_now():
+    return datetime.now(timezone.utc)
 
 Base = declarative_base()
 
@@ -18,6 +21,7 @@ class Goal(Base):
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
     category = Column(String, nullable=False)
+
     target_amount = Column(Float, nullable=False)
     current_amount = Column(Float, default=0.0)
     target_date = Column(DateTime, nullable=False)
@@ -25,8 +29,8 @@ class Goal(Base):
     status = Column(String, nullable=False)
     linked_account_id = Column(String, nullable=True)
     monthly_contribution = Column(Float, default=0.0)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
 
     user = relationship("User", back_populates="goals")
     contributions = relationship("GoalContribution", back_populates="goal", cascade="all, delete-orphan")
@@ -37,8 +41,8 @@ class GoalContribution(Base):
     goal_id = Column(Integer, ForeignKey("goals.id"), nullable=False)
     transaction_id = Column(String, nullable=True, index=True)
     amount = Column(Float, nullable=False)
-    contribution_date = Column(DateTime, nullable=False, default=datetime.utcnow)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    contribution_date = Column(DateTime, nullable=False, default=utc_now)
+    created_at = Column(DateTime, default=utc_now)
 
     goal = relationship("Goal", back_populates="contributions")
 
@@ -58,7 +62,7 @@ class Bill(Base):
     status = Column(String, nullable=False, default="Active")
     auto_pay = Column(Boolean, default=False)
     notes = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
 
     user = relationship("User")
