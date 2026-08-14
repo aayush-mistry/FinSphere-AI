@@ -2,9 +2,9 @@
 
 > **A Balance-First Financial Operating System**
 
-FinSphere AI is an intelligent financial operating system designed to help users understand, manage, and grow their finances from a single source of truth—their **Balance**.
+FinSphere AI is an intelligent financial operating system designed to help users understand, manage, and plan their finances from a single source of truth — their **Balance**.
 
-Unlike traditional finance apps that separate budgeting, investments, bills, taxes, and forecasting into isolated modules, FinSphere AI builds every financial insight from one unified **Balance Engine**.
+Unlike traditional finance applications that treat expenses, bills, goals, cash flow, and financial planning as isolated features, FinSphere AI connects them through a unified financial core.
 
 The goal is simple:
 
@@ -14,164 +14,145 @@ The goal is simple:
 
 # 🚀 Vision
 
-FinSphere AI isn't just another expense tracker.
+FinSphere AI is not intended to be another basic expense tracker.
 
-It is a Balance-First Financial Operating System where every feature is connected through a single financial core.
+The long-term vision is to build a **Balance-First Financial Operating System** capable of understanding a user's complete financial state and reasoning about its future.
 
-Instead of jumping between multiple apps to track spending, investments, bills, taxes, and financial planning, users manage everything from one intelligent platform.
+Instead of simply showing:
+
+> "You spent ₹45,000 this month."
+
+FinSphere should eventually be able to answer:
+
+> "If your current spending continues, your liquid cash will fall below your safe threshold in 47 days."
+
+And eventually:
+
+> "If you invest ₹25,000 instead of ₹15,000 this month, your goal probability changes from 71% to 78%, but your short-term liquidity risk increases."
+
+The current version establishes the financial foundation required to reach that level of intelligence.
 
 ---
 
-# 🏗️ Core Philosophy
+# 🧠 Core Philosophy
 
 Everything begins with the **Balance Engine**.
 
+```text
+                         Transactions
+                              │
+             ┌────────────────┼────────────────┐
+             ▼                ▼                ▼
+          Income           Expenses         Transfers
+             │                │                │
+             └────────────────┼────────────────┘
+                              ▼
+                       Balance Engine
+                              │
+            ┌─────────────────┼─────────────────┐
+            ▼                 ▼                 ▼
+        Accounts          Cash Flow          Net Worth
+            │                 │                 │
+            └─────────────────┼─────────────────┘
+                              ▼
+                    Financial State
+                              │
+          ┌───────────────────┼───────────────────┐
+          ▼                   ▼                   ▼
+        Bills               Goals             Forecasting
+          │                   │                   │
+          └───────────────────┼───────────────────┘
+                              ▼
+                    Financial Intelligence
 ```
-                    Transactions
-                          │
-        ┌─────────────────┼─────────────────┐
-        ▼                 ▼                 ▼
-     Income          Expenses         Transfers
-        │                 │                 │
-        └─────────────────┼─────────────────┘
-                          ▼
-                  Balance Engine
-                          │
-        ┌──────────┬──────────┬──────────┐
-        ▼          ▼          ▼          ▼
-    Accounts   Cash Flow  Net Worth  Monthly Summary
-                          │
-                          ▼
-                 Future Financial Modules
-```
-
-Every future module consumes data from the Balance Engine.
-
-No module calculates financial data independently.
 
 ---
 
-# ✨ Current Features
+# ✨ Core Features & Engines
 
-## 🔐 Authentication
+FinSphere AI's architecture is composed of interconnected "Engines," each responsible for a specific aspect of your financial life.
 
-- Secure user authentication
-- Protected routes
-- User profile management
+## 💰 1. Balance Engine (The Core)
+The Balance Engine is the heart of FinSphere AI. It aggregates data from all connected accounts (checking, savings, credit) to calculate your **True Net Available Cash**. 
+- Adjusts instantly based on pending transactions to provide total visibility into liquidity.
+- Acts as the central hub from which all other engines derive their calculations.
 
----
+## 📈 2. Income Engine
+The Income Engine is responsible for tracking and predicting cash inflows.
+- **Smart Categorization:** Automatically differentiates between stable, recurring salaries and one-off freelance or gig income.
+- **Baseline Prediction:** Enables accurate baseline income predictions for future months, ensuring you know exactly what cash you can rely on.
 
-## 💰 Balance Engine
+## 📉 3. Expense Engine
+The Expense Engine provides deep categorization and intelligent analysis of your daily outflows.
+- **Deep Categorization:** Organizes spending into granular categories.
+- **Anomaly Detection:** Actively flags unexpected spending spikes or lifestyle inflation before they become a problem.
+- **Actionable Advice:** Identifies exactly where to cut back to maximize savings without sacrificing your lifestyle.
 
-The heart of FinSphere AI.
+## 📅 4. Bills Engine
+The Bills Engine is your ultimate defense against late fees and "zombie" subscriptions.
+- **Automated Tracking:** Detects recurring subscriptions and utility bills from your transaction history.
+- **Chronological Timeline:** Visualizes exactly when money will leave your account.
+- **Smart Matching:** Automatically reconciles bank transactions against expected bills to ensure nothing is missed.
 
-Calculates:
+## 🌊 5. Cashflow Engine
+The Cashflow Engine maps the flow of money in and out over time.
+- **Burn Rate Calculation:** Calculates your current "burn rate" based on recent spending.
+- **Liquidity Foresight:** Visually displays your liquidity trends, ensuring you are never caught cash-poor before payday.
 
-- Total Balance
-- Available Cash
-- Net Worth
-- Monthly Income
-- Monthly Expenses
-- Monthly Savings
-- Cash Flow
-- Account Summary
-- Financial Position
-
----
-
-## 🏦 Account Management
-
-Manage multiple financial accounts including:
-
-- Checking Accounts
-- Savings Accounts
-- Credit Cards
-- Investment Accounts
-- Crypto Wallets
-- Business Accounts
-
----
-
-## 💳 Transaction Management
-
-Track all financial activities.
-
-Supported transaction types include:
-
-- Income
-- Expenses
-- Transfers
-- Refunds
-- Salary
-- Investments
-- Loan Payments
-- Interest
-- Dividends
+## 🎯 6. Goals Engine (Predictive Orchestration)
+The Goals Engine is our core Unique Selling Proposition (USP), offering predictive goal orchestration.
+- **Simulated Trajectories:** Input a target (e.g., "₹10,00,000 for a car") and visualize the exact path to get there.
+- **Dynamic Pacing:** Calculates exact required monthly or weekly contributions based on your deadline.
+- **What-If Scenarios:** Simulate how changing your contribution today impacts your completion date.
+- **Behavioral Adjustments:** The engine adapts to your actual saving habits in real-time, recalculating the required pace if you miss a contribution.
 
 ---
 
-## 📊 Balance Workspace
+# 🛡️ Additional Features
 
-The homepage of FinSphere AI.
+## 🔒 Privacy Mode
+We believe that in FinTech, User Experience isn't just about looking good—it’s about building trust. With one click, **Privacy Mode** instantly masks all sensitive data, balances, and transaction amounts, allowing you to check your finances safely in public spaces.
 
-Displays:
-
-- Total Balance
-- Net Worth
-- Available Cash
-- Monthly Income
-- Monthly Expenses
-- Monthly Savings
-- Cash Flow
-- Recent Transactions
-- Account Overview
+## 🎨 Premium UX & Aesthetics
+- **Fluid Interactions:** 60fps micro-animations that make finance feel responsive and alive.
+- **Dark Mode Optimization:** Reduces eye strain and creates a premium, institutional-grade feel.
+- **Cognitive Ease:** Complex data is simplified into beautiful, easily digestible widgets.
 
 ---
 
 # 🛣️ Development Roadmap
 
-## ✅ Phase 1 — Financial Core
-
-- Authentication
+### ✅ Phase 1 — Financial Core
+- Authentication & Secure User Profiles
 - Balance Engine
 - Account Management
 - Transaction Management
 - Cash Flow Engine
 - Balance Workspace
 
----
+### 🚧 Phase 2 — Money Management
+- Expense Tracking & Analytics
+- Bills & Subscription Management
+- Investment Tracking
+- Tax Management
 
-## 🚧 Phase 2 — Money Management
-
-- Expenses
-- Investments
-- Bills
-- Taxes
-
----
-
-## 📈 Phase 3 — Forecasting
-
+### 📈 Phase 3 — Forecasting & Goals
+- Goals Engine with Dynamic Pacing
 - Future Balance Projection
-- Expense Prediction
-- Investment Projection
 - Net Worth Forecast
 - Savings Forecast
 
----
-
-## 🤖 Phase 4 — Financial Intelligence
-
-- AI Financial Advisor
-- Smart Recommendations
-- Financial Explanations
-- What-if Simulations
+### 🤖 Phase 4 — Financial Intelligence
+- AI Financial Advisor Chatbot (e.g., "Can I afford to eat out tonight?")
+- Smart Recommendations & What-if Simulations
 - Personalized Insights
 
----
+### 📱 Phase 5 — Platform Expansion
+- Live Bank API Integrations (Plaid, Stripe)
+- Mobile Application Deployment (React Native)
+- Comprehensive Investment & Portfolio Tracking (Stocks, Crypto integrations)
 
-## 🏢 Phase 5 — Business Finance
-
+### 🏢 Phase 6 — Business Finance
 - Business Dashboard
 - Payroll Management
 - Invoice Tracking
@@ -180,29 +161,27 @@ Displays:
 
 ---
 
+# 🌟 Future Vision
+
+The Balance Engine will become the foundation for a complete **Digital Financial Twin**. Every future feature—from expense analytics to an AI CFO—will consume data from the same financial core, ensuring perfect consistency across your entire financial life.
+
+---
+
 # 🛠️ Tech Stack
 
 ## Frontend
-
 - Next.js 15
-- React
+- React 19
 - TypeScript
 - Tailwind CSS
 - shadcn/ui
 - Framer Motion
-- Lucide React
 
 ## Backend
-
 - FastAPI
-- PostgreSQL
+- Python
+- PostgreSQL / SQLite
 - SQLAlchemy
-
-## Future AI Stack
-
-- LangGraph
-- OpenAI
-- Gemini
 
 ---
 
@@ -219,14 +198,12 @@ FinSphere-AI/
 │   ├── services/
 │   └── types/
 │
-├── backend/
-│   ├── api/
-│   ├── models/
-│   ├── services/
-│   ├── database/
-│   └── main.py
-│
-└── README.md
+└── backend/
+    ├── api/
+    ├── models/
+    ├── services/
+    ├── database/
+    └── main.py
 ```
 
 ---
@@ -234,101 +211,32 @@ FinSphere-AI/
 # 🚀 Getting Started
 
 ## Frontend
-
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-Runs on:
-
-```
-http://localhost:3000
-```
-
----
-
 ## Backend
-
 ```bash
 cd backend
-
 python -m venv venv
-
 # Windows
 .\venv\Scripts\activate
-
 # macOS / Linux
 source venv/bin/activate
 
 pip install -r requirements.txt
-
 uvicorn main:app --reload
 ```
-
-Backend runs on:
-
-```
-http://localhost:8000
-```
-
----
-
-# 🎯 Design Principles
-
-FinSphere AI follows a few simple principles:
-
-- One source of financial truth
-- Clean and minimal interface
-- Modular architecture
-- Reusable business logic
-- Predictive financial insights
-- Scalable for personal and business finance
-
----
-
-# 📌 Project Status
-
-Current Version:
-
-```
-Phase 1 — Financial Core
-```
-
-Current Focus:
-
-```
-Building the Balance Engine as the foundation for all future financial modules.
-```
-
----
-
-# 🌟 Future Vision
-
-The Balance Engine will become the foundation for:
-
-- Expense Analytics
-- Investment Portfolio
-- Bill Management
-- Tax Planning
-- Financial Forecasting
-- AI Financial Advisor
-- Business CFO
-- Digital Financial Twin
-
-Every feature will consume data from the same financial core.
 
 ---
 
 # 🤝 Contributing
-
 Contributions, ideas, and feedback are always welcome.
-
 Feel free to fork the repository, open issues, or submit pull requests.
 
 ---
 
 # 📄 License
-
 This project is licensed under the MIT License.
